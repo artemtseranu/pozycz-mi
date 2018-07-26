@@ -1,0 +1,43 @@
+{
+  "name": "",
+  "version": "",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "start": "webpack-dev-server --port 8081 --mode development --hot",
+    "build": "webpack --mode production"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.5",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "css-loader": "^1.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "style-loader": "^0.21.0",
+    "webpack": "^4.16.3",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.5"
+  },
+  "dependencies": {
+    "@material-ui/core": "^1.4.3",
+    "@material-ui/icons": "^2.0.1",
+    "babel-polyfill": "^6.26.0",
+    "classnames": "^2.2.6",
+    "connected-react-router": "^4.3.0",
+    "history": "^4.7.2",
+    "immutable": "^3.8.2",
+    "ipfs-api": "^22.2.4",
+    "prop-types": "^15.6.2",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "react-redux": "^5.0.7",
+    "react-router": "^4.3.1",
+    "redux": "^4.0.0",
+    "redux-saga": "^0.16.0",
+    "truffle-contract": "^3.0.6"
+  }
+}
