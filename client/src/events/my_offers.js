@@ -1,4 +1,4 @@
-import { namespace } from "Lib/events";
+import { namespace } from "Lib/event_utils";
 
 const ns = namespace("my_offers");
 

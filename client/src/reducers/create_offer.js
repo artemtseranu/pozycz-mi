@@ -1,7 +1,6 @@
 import { Map, List } from "immutable";
 
-// TODO: Should be createReducer?
-import { create } from "Lib/reducers";
+import { create } from "Lib/reducer_utils";
 
 import * as Events from "Events/create_offer";
 

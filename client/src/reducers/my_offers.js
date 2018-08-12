@@ -1,6 +1,6 @@
 import { List, Map, Record } from "immutable";
 
-import { create } from "Lib/reducers";
+import { create } from "Lib/reducer_utils";
 
 import * as Events from "Events/my_offers";
 

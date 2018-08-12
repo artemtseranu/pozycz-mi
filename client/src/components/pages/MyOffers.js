@@ -97,7 +97,6 @@ function mapStateToProps(state) {
   };
 }
 
-// export default requireEthereum(connect(mapStateToProps)(withStyles(styles)(MyOffers)));
 export default pipe(
   withStyles(styles),
   connect(mapStateToProps),

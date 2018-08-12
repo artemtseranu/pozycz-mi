@@ -1,7 +1,6 @@
 import { Map } from "immutable";
 
-// TODO: Lib/reducers -> Lib/reducer_utils
-import { create } from "Lib/reducers";
+import { create } from "Lib/reducer_utils";
 
 import * as Events from "Events/ethereum";
 
