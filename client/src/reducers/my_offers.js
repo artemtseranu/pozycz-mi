@@ -5,7 +5,8 @@ import { create } from "Lib/reducers";
 import * as Events from "Events/my_offers";
 
 const OfferAttributes = Record({
-  description: ""
+  description: "",
+  details: ""
 });
 
 const Offer = Record({

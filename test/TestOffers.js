@@ -66,4 +66,14 @@ contract("Offers", function(accounts) {
 
     assert.equal(errorMessage, "VM Exception while processing transaction: revert");
   });
+
+  // TODO: check this
+  // it("handles weird inputs", async () => {
+  //   const instance = await Offers.deployed();
+
+  //   await instance.createOffer.sendTransaction("Offer 4", "QmTe8wa5tCniYFZxvjMDAvjy3xQ2No1kkw5ciLLSmz2k5v", {from: accounts[0]});
+
+  //   const [_owner, _description, details] = await instance.getOffer(4);
+  //   console.log(details);
+  // });
 });

@@ -60,6 +60,16 @@ class MyOffers extends React.Component {
   render() {
     const { classes } = this.props;
 
+    if (this.props.offers.count() === 0) {
+      return (
+        <div className={classes.root}>
+          <p>
+            You don't have any offers yet
+          </p>
+        </div>
+      );
+    }
+
     const offers = this.props.offers.map((offer) => {
       return (
         <Grid item key={offer.get("id")}>

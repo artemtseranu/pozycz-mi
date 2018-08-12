@@ -6,6 +6,8 @@ import Card from "@material-ui/core/Card";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 
+import { bytes32ToMultihash } from "Lib/ipfs_utils";
+
 const styles = (theme) => {
   return {
     card: {
@@ -27,6 +29,11 @@ class Offer extends React.Component {
           <Grid item xs={12}>
             <Typography variant="title">
               {offer.getIn(["attributes", "description"])}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography>
+              {bytes32ToMultihash(offer.getIn(["attributes", "details"]))}
             </Typography>
           </Grid>
         </Grid>
