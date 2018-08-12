@@ -7,15 +7,17 @@ import * as Events from "Events/ethereum";
 const initialState = Map({
   initStatus: "pending",
   initErrorMessage: "",
+  initBlockNumber: 0,
   contracts: Map()
 });
 
 const handlers = {
-  [Events.Init.STARTED]: state => initialState,
+  [Events.Init.STARTED]: () => initialState,
 
   [Events.Init.SUCCEEDED]: (state, event) => {
     return state.
       set("initStatus", "success").
+      set("initBlockNumber", event.initBlockNumber).
       set("contracts", Map(event.contracts));
   },
 
