@@ -32,6 +32,7 @@
     "immutable": "^3.8.2",
     "ipfs-api": "^22.2.4",
     "prop-types": "^15.6.2",
+    "ramda": "^0.25.0",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-redux": "^5.0.7",

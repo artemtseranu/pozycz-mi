@@ -1,11 +1,14 @@
 import React from "react";
 import { connect } from "react-redux";
 import IpfsApi from "ipfs-api";
+import { pipe } from "ramda";
 
 import { withStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
+
+import { requireEthereum } from "Lib/page_utils";
 
 import * as Events from "Events/create_offer";
 
@@ -125,4 +128,8 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps)(withStyles(styles)(CreateOffer));
+export default pipe(
+  withStyles(styles),
+  connect(mapStateToProps),
+  requireEthereum
+)(CreateOffer);

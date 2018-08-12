@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 
 import * as Events from "Events/ethereum";
 
-class RequireEthereum extends React.Component {
+class EthereumComponent extends React.Component {
   checkWeb3() {
     return window.web3 !== undefined;
   }
@@ -16,7 +16,7 @@ class RequireEthereum extends React.Component {
 
   render() {
     if (!this.checkWeb3()) {
-      // Copied from https://github.com/trufflesuite/drizzle-react-components/blob/master/src/LoadingContainer.js#L36
+      // Taken from https://github.com/trufflesuite/drizzle-react-components/blob/master/src/LoadingContainer.js#L36
       return (
         <React.Fragment>
           <p>
@@ -61,11 +61,17 @@ class RequireEthereum extends React.Component {
   }
 }
 
-function mapStateToProps(state) {
+function mapEthereumStateToProps(state) {
   return {
     initStatus: state.eth.get("initStatus"),
     initErrorMessage: state.eth.get("initErrorMessage")
   };
 }
 
-export default connect(mapStateToProps)(RequireEthereum);
+const ConnectedEthereumComponent = connect(mapEthereumStateToProps)(EthereumComponent);
+
+export function requireEthereum(Component) {
+  return props => (
+    <ConnectedEthereumComponent><Component /></ConnectedEthereumComponent>
+  );
+}
