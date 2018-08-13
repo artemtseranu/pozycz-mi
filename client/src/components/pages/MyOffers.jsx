@@ -9,11 +9,13 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 
 import { requireEthereum } from 'Lib/page_utils';
-import { currentAccount } from 'Lib/ethereum_utils';
 
 import * as Events from 'Events/my_offers';
+import * as MyOffersState from 'Entities/my_offers_state';
+import * as Offer from 'Entities/offer';
+import * as OfferCacheState from 'Entities/offer_cache_state';
 
-import Offer from './MyOffers/Offer';
+import OfferComponent from './MyOffers/Offer';
 
 const styles = {
   root: {
@@ -25,35 +27,10 @@ const styles = {
 };
 
 class MyOffers extends React.Component {
-  constructor() {
-    super();
-    this.state = {};
-  }
-
   componentDidMount() {
-    const { dispatch, offersContract } = this.props; // eslint-disable-line react/prop-types
+    const { dispatch } = this.props; // eslint-disable-line react/prop-types
 
-    const offerCreated = offersContract.OfferCreated(
-      { owner: currentAccount() },
-      { fromBlock: 0 },
-      (error, event) => {
-        if (!error) {
-          dispatch({
-            type: Events.OFFER_CREATED,
-            transactionHash: event.transactionHash,
-            id: parseInt(event.args.id, 10),
-            attributes: event.args,
-          });
-        }
-      },
-    );
-
-    this.state.offerCreated = offerCreated;
-  }
-
-  componentWillUnmount() {
-    const { offerCreated } = this.state;
-    offerCreated.stopWatching();
+    dispatch({ type: Events.MOUNTED });
   }
 
   handleCreateOfferClick() {
@@ -70,15 +47,15 @@ class MyOffers extends React.Component {
       return (
         <div className={classes.root}>
           <p>
-            You don&quot;t have any offers yet
+            You don&#39;t have any offers yet
           </p>
         </div>
       );
     }
 
     const offerElements = offers.map(offer => (
-      <Grid item key={offer.get('id')}>
-        <Offer offer={offer} />
+      <Grid item key={Offer.getId(offer)}>
+        <OfferComponent offer={offer} />
       </Grid>
     ));
 
@@ -97,9 +74,11 @@ MyOffers.propTypes = {
 };
 
 function mapStateToProps(state) {
+  const offerIds = MyOffersState.getOfferIds(state.myOffers);
+  const offers = OfferCacheState.getOffers(state.offerCache, offerIds);
+
   return {
-    offersContract: state.eth.getIn(['contracts', 'offers']),
-    offers: state.myOffers.get('offers'),
+    offers,
   };
 }
 

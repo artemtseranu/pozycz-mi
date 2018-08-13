@@ -16,6 +16,8 @@ export function currentAccount() {
 }
 
 export function getBlockNumber() {
+  requireWeb3();
+
   return new Promise((resolve, reject) => {
     window.web3.eth.getBlockNumber((error, blockNumber) => {
       if (error) {
@@ -24,6 +26,21 @@ export function getBlockNumber() {
       }
 
       resolve(blockNumber);
+    });
+  });
+}
+
+export function getAllEvents(Event, filters, fromBlock = 0, toBlock = 'latest') {
+  requireWeb3();
+
+  return new Promise((resolve, reject) => {
+    Event(filters, { fromBlock, toBlock }).get((error, events) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve(events);
     });
   });
 }

@@ -6,8 +6,7 @@ import Card from '@material-ui/core/Card';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 
-import { Offer as OfferRecord } from 'Reducers/my_offers';
-import { bytes32ToMultihash } from 'Lib/ipfs_utils';
+import * as Offer from 'Entities/offer';
 
 const styles = theme => ({
   card: {
@@ -15,7 +14,7 @@ const styles = theme => ({
   },
 });
 
-class Offer extends React.Component { // eslint-disable-line react/prefer-stateless-function
+class OfferComponent extends React.Component { // eslint-disable-line react/prefer-stateless-function
   render() {
     const { classes } = this.props; // eslint-disable-line react/prop-types
     const { offer } = this.props;
@@ -24,16 +23,16 @@ class Offer extends React.Component { // eslint-disable-line react/prefer-statel
       <Card className={classes.card}>
         <Grid container>
           <Grid item xs={12}>
-            {offer.get('transactionStatus') === 'pending' ? 'pending...' : offer.get('id')}
+            {offer.get('transactionStatus') === 'pending' ? 'pending...' : Offer.getId(offer)}
           </Grid>
           <Grid item xs={12}>
             <Typography variant="title">
-              {offer.getIn(['attributes', 'description'])}
+              {Offer.getDescription(offer)}
             </Typography>
           </Grid>
           <Grid item xs={12}>
             <Typography>
-              {bytes32ToMultihash(offer.getIn(['attributes', 'details']))}
+              {Offer.getDetailsMultihash(offer)}
             </Typography>
           </Grid>
         </Grid>
@@ -43,7 +42,7 @@ class Offer extends React.Component { // eslint-disable-line react/prefer-statel
 }
 
 Offer.propTypes = {
-  offer: PropTypes.instanceOf(OfferRecord).isRequired,
+  offer: PropTypes.instanceOf(Offer.Offer).isRequired,
 };
 
-export default withStyles(styles)(Offer);
+export default withStyles(styles)(OfferComponent);
