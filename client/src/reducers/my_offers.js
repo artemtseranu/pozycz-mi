@@ -2,6 +2,10 @@ import { List, Map, Record } from 'immutable';
 
 import { create } from 'Lib/reducer_utils';
 
+import {
+  OperationState, SuccessOperationState, FailureOperationState,
+} from 'Entities/operation_state';
+
 import * as Events from 'Events/my_offers';
 
 const OfferAttributes = Record({
@@ -18,6 +22,9 @@ export const Offer = Record({
 
 const initialState = Map({
   offers: List(),
+
+  init: OperationState(),
+  offerIds: List(),
 });
 
 function updateOfferListAfterOfferCreated(id, transactionHash, attributes, offers) {
@@ -54,6 +61,16 @@ function updateOfferListAfterOfferCreated(id, transactionHash, attributes, offer
 }
 
 const handlers = {
+  [Events.Init.STARTED]: () => initialState,
+
+  [Events.Init.SUCCEEDED]: (state, event) => (
+    state
+      .set('init', SuccessOperationState())
+      .set('offerIds', event.offerIds)
+  ),
+
+  [Events.Init.FAILED]: (state, event) => state.set('init', FailureOperationState(event.errorMessage)),
+
   [Events.OFFER_CREATED]: (state, event) => state.update('offers', offers => updateOfferListAfterOfferCreated(event.id, event.transactionHash, event.attributes, offers)),
 
   [Events.OFFER_ADDED]: (state, event) => state.update('offers', (offers) => {

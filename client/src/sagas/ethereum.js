@@ -4,14 +4,18 @@ import {
 import TruffleContract from 'truffle-contract';
 
 import { getBlockNumber } from 'Lib/ethereum_utils';
+import { rootSelector } from 'Lib/reducer_utils';
+
+import * as EthereumState from 'Entities/ethereum_state';
+import * as OperationState from 'Entities/operation_state';
 import * as Events from 'Events/ethereum';
 
 import offersContractArtifact from 'ContractArtifacts/Offers.json';
 
 function* init() {
-  const initStatus = yield select(state => state.eth.get('initStatus'));
+  const initState = yield select(rootSelector('eth')(EthereumState.getInit));
 
-  if (initStatus !== 'pending') return;
+  if (!OperationState.isPending(initState)) return;
 
   yield put({ type: Events.Init.STARTED });
 

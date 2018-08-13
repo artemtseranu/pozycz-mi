@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 import { checkWeb3 } from 'Lib/ethereum_utils';
 import * as Events from 'Events/ethereum';
+import * as OperationState from 'Entities/operation_state';
 
 class EthereumComponent extends React.Component {
   componentDidMount() {
@@ -29,10 +30,10 @@ class EthereumComponent extends React.Component {
       );
     }
 
-    const { children, initErrorMessage } = this.props; // eslint-disable-line react/prop-types
-    const { initStatus } = this.props;
+    const { children } = this.props; // eslint-disable-line react/prop-types
+    const { init } = this.props;
 
-    switch (initStatus) {
+    switch (OperationState.getStatus(init)) {
       case 'pending':
         return (
           <React.Fragment>
@@ -54,25 +55,23 @@ class EthereumComponent extends React.Component {
               Failed to connect to the Ethereum network.
             </p>
             <p>
-              {initErrorMessage}
+              {OperationState.getErrorMessage(init)}
             </p>
           </React.Fragment>
         );
       default:
-        throw `Unexpected value: ${initStatus}`; // eslint-disable-line no-throw-literal
+        throw `Unexpected value: ${OperationState.getStatus(init)}`; // eslint-disable-line no-throw-literal
     }
   }
 }
 
 EthereumComponent.propTypes = {
-  initStatus: PropTypes.string.isRequired,
-  initErrorMessage: PropTypes.string.isRequired,
+  init: PropTypes.instanceOf(OperationState.OperationState).isRequired,
 };
 
 function mapEthereumStateToProps(state) {
   return {
-    initStatus: state.eth.get('initStatus'),
-    initErrorMessage: state.eth.get('initErrorMessage'),
+    init: state.eth.get('init'),
   };
 }
 

@@ -6,3 +6,10 @@ export function create(handlers, initialState = new Map({})) { // eslint-disable
     return handler ? handler(state, event) : state;
   };
 }
+
+export function rootSelector(key) {
+  return selector => (rootState) => {
+    const state = key ? rootState[key] : rootState;
+    return selector(state);
+  };
+}

@@ -1,27 +1,22 @@
-import { Map } from 'immutable';
+import { partialRight, pipe } from 'ramda';
 
 import { create } from 'Lib/reducer_utils';
-
 import * as Events from 'Events/ethereum';
 
-const initialState = Map({
-  initStatus: 'pending',
-  initErrorMessage: '',
-  initBlockNumber: 0,
-  contracts: Map(),
-});
+import {
+  EthereumState, setSuccessInit, setInitBlockNumber, setContracts, setFailureInit,
+} from 'Entities/ethereum_state';
 
 const handlers = {
-  [Events.Init.STARTED]: () => initialState,
+  [Events.Init.STARTED]: () => EthereumState(),
 
-  [Events.Init.SUCCEEDED]: (state, event) => state
-    .set('initStatus', 'success')
-    .set('initBlockNumber', event.initBlockNumber)
-    .set('contracts', Map(event.contracts)),
+  [Events.Init.SUCCEEDED]: (state, event) => pipe(
+    setSuccessInit,
+    partialRight(setInitBlockNumber, [event.initBlockNumber]),
+    partialRight(setContracts, [event.contracts]),
+  )(state),
 
-  [Events.Init.FAILED]: (state, event) => state
-    .set('initStatus', 'failure')
-    .set('initErrorMessage', event.errorMessage),
+  [Events.Init.FAILED]: (state, event) => setFailureInit(state, event.errorMessage),
 };
 
-export default create(handlers, initialState);
+export default create(handlers, EthereumState());
