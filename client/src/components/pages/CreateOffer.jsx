@@ -60,12 +60,12 @@ class CreateOffer extends React.Component {
 
       ipfs.files.add(buffer, (error, result) => {
         if (error) {
-          console.error(error);
+          // TODO: Handle this
           return;
         }
 
         if (imageHashes.includes(result[0].hash)) {
-          alert("You've already uploaded this image");
+          // TODO: Show alert?
           return;
         }
 
@@ -87,9 +87,9 @@ class CreateOffer extends React.Component {
 
     if (form.get('submitStatus') === 'processing') {
       return (
-        <Card className={classes.card}>
+        <p>
           Waiting on transaction approval...
-        </Card>
+        </p>
       );
     }
 

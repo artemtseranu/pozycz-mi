@@ -3,7 +3,7 @@ import {
 } from 'redux-saga/effects';
 import TruffleContract from 'truffle-contract';
 
-import { getBlockNumber } from 'Lib/ethereum_utils';
+import { currentAccount, getBlockNumber } from 'Lib/ethereum_utils';
 import { rootSelector } from 'Lib/reducer_utils';
 
 import * as EthereumState from 'Entities/ethereum_state';
@@ -12,7 +12,7 @@ import * as Events from 'Events/ethereum';
 
 import offersContractArtifact from 'ContractArtifacts/Offers.json';
 
-function* init() {
+function* init({ dispatch }) {
   const initState = yield select(rootSelector('eth')(EthereumState.getInit));
 
   if (!OperationState.isPending(initState)) return;
@@ -42,12 +42,25 @@ function* init() {
     return;
   }
 
+  const myOfferCreated = offersContract.OfferCreated(
+    { owner: currentAccount() },
+  );
+
+  myOfferCreated.watch((error, event) => {
+    if (!error && event.blockNumber > initBlockNumber) {
+      dispatch({ type: Events.MY_OFFER_CREATED, ethereumEvent: event });
+    }
+  });
+
   yield put({
     type: Events.Init.SUCCEEDED,
     contracts: {
       offers: offersContract,
     },
     initBlockNumber,
+    watchers: {
+      myOfferCreated,
+    },
   });
 }
 

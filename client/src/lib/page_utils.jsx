@@ -11,7 +11,7 @@ class EthereumComponent extends React.Component {
     if (!checkWeb3()) return;
 
     const { dispatch } = this.props; // eslint-disable-line react/prop-types
-    dispatch({ type: Events.REQUIRED });
+    dispatch({ type: Events.REQUIRED, dispatch });
   }
 
   render() {

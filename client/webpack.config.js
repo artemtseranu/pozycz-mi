@@ -15,7 +15,6 @@ module.exports = {
       Components: path.resolve(__dirname, 'src/components'),
       Constants: path.resolve(__dirname, 'src/constants'),
       Events: path.resolve(__dirname, 'src/events'),
-      Models: path.resolve(__dirname, 'src/models'),
       Entities: path.resolve(__dirname, 'src/entities'),
       Reducers: path.resolve(__dirname, 'src/reducers'),
       Lib: path.resolve(__dirname, 'src/lib'),

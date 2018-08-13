@@ -3,19 +3,17 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import { pipe } from 'ramda';
-import { List } from 'immutable';
 
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
 
 import { requireEthereum } from 'Lib/page_utils';
 
 import * as Events from 'Events/my_offers';
 import * as MyOffersState from 'Entities/my_offers_state';
-import * as Offer from 'Entities/offer';
-import * as OfferCacheState from 'Entities/offer_cache_state';
+import * as OperationState from 'Entities/operation_state';
 
-import OfferComponent from './MyOffers/Offer';
+import CombinedOfferList from './MyOffers/CombinedOfferList';
+// import OfferList from './MyOffers/OfferList';
 
 const styles = {
   root: {
@@ -39,46 +37,61 @@ class MyOffers extends React.Component {
     dispatch(push('/create-offer'));
   }
 
+  renderCombinedOfferList() {
+    const { init } = this.props;
+
+    switch (OperationState.getStatus(init)) {
+      case 'pending':
+        return (
+          <p>
+            Loading offer list...
+          </p>
+        );
+      case 'success':
+        return <CombinedOfferList />;
+      case 'failure':
+        return (
+          <p>
+            Failed to load offer list.
+            {OperationState.getErrorMessage(init)}
+          </p>
+        );
+      default:
+        throw `Unexpected value: ${OperationState.getStatus(init)}`; // eslint-disable-line no-throw-literal, max-len
+    }
+  }
+
   render() {
     const { classes } = this.props; // eslint-disable-line react/prop-types
-    const { offers } = this.props;
 
-    if (offers.count() === 0) {
-      return (
-        <div className={classes.root}>
-          <p>
-            You don&#39;t have any offers yet
-          </p>
-        </div>
-      );
-    }
-
-    const offerElements = offers.map(offer => (
-      <Grid item key={Offer.getId(offer)}>
-        <OfferComponent offer={offer} />
-      </Grid>
-    ));
+    // <OfferList
+    //   title="Pending offers"
+    //   keyFn={offer => Offer.getTransactionHash(offer)}
+    //   offers={pendingOffers}
+    // />
+    // <OfferList
+    //   title="Recorded offers"
+    //   keyFn={offer => Offer.getId(offer)}
+    //   offers={offers}
+    //   whenEmpty="You don't have any offers yet"
+    //   direction="column-reverse"
+    // />
 
     return (
       <div className={classes.root}>
-        <Grid container spacing={16} direction="column-reverse">
-          {offerElements}
-        </Grid>
+        {this.renderCombinedOfferList()}
       </div>
     );
   }
 }
 
 MyOffers.propTypes = {
-  offers: PropTypes.instanceOf(List).isRequired,
+  init: PropTypes.instanceOf(OperationState.OperationState).isRequired,
 };
 
 function mapStateToProps(state) {
-  const offerIds = MyOffersState.getOfferIds(state.myOffers);
-  const offers = OfferCacheState.getOffers(state.offerCache, offerIds);
-
   return {
-    offers,
+    init: MyOffersState.getInit(state.myOffers),
   };
 }
 

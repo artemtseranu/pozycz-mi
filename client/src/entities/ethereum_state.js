@@ -6,6 +6,7 @@ export const EthereumState = Record({
   init: OperationState.OperationState(),
   initBlockNumber: 0,
   contracts: Map(),
+  watchers: Map(),
 });
 
 export function getOffersContract(state) {
@@ -30,4 +31,9 @@ export function setInitBlockNumber(state, initBlockNumber) {
 
 export function setContracts(state, contracts) {
   return state.set('contracts', Map(contracts));
+}
+
+export function setWatchers(state, watchers) {
+  console.log(watchers);
+  return state.set('watchers', Map(watchers));
 }
