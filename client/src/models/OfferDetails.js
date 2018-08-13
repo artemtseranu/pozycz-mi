@@ -1,8 +1,8 @@
-import { Record } from "immutable";
+import { Record } from 'immutable';
 
 const OfferDetails = Record({
-  detailedDescription: "",
-  imageHashes: []
+  detailedDescription: '',
+  imageHashes: [],
 });
 
 export default OfferDetails;

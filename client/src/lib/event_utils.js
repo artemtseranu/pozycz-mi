@@ -1,13 +1,11 @@
 export function namespace(ns) {
-  return function(name) {
-    return `${ns}.${name}`;
-  }
+  return name => `${ns}.${name}`;
 }
 
 export function operation(name) {
   return {
     STARTED: `${name}.started`,
     SUCCEEDED: `${name}.succeeded`,
-    FAILED: `${name}.failed`
+    FAILED: `${name}.failed`,
   };
 }

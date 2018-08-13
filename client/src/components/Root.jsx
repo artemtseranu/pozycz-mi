@@ -1,16 +1,16 @@
-import React from "react";
-import { Switch, Route } from "react-router";
+import React from 'react';
+import { Switch, Route } from 'react-router';
 
-import Layout from "./Layout";
+import Layout from './Layout';
 
-import MyOffers from "./pages/MyOffers";
-import CreateOffer from "./pages/CreateOffer";
-import About from "./pages/About";
-import NotFound from "./pages/NotFound";
+import MyOffers from './pages/MyOffers';
+import CreateOffer from './pages/CreateOffer';
+import About from './pages/About';
+import NotFound from './pages/NotFound';
 
 class Root extends React.Component {
   componentDidMount() {
-    console.log("Root did mount");
+    console.log('Root did mount');
   }
 
   render() {

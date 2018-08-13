@@ -1,16 +1,16 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import { Provider } from "react-redux";
-import { applyMiddleware, combineReducers, createStore } from "redux";
-import createSagaMiddleware from "redux-saga";
-import { createHashHistory } from "history";
-import { ConnectedRouter, connectRouter, routerMiddleware } from "connected-react-router";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import { applyMiddleware, combineReducers, createStore } from 'redux';
+import createSagaMiddleware from 'redux-saga';
+import { createHashHistory } from 'history';
+import { ConnectedRouter, connectRouter, routerMiddleware } from 'connected-react-router';
 
 import CssBaseline from '@material-ui/core/CssBaseline';
 
-import * as reducers from "./reducers";
-import rootSaga from "./sagas/root";
-import Root from "./components/Root";
+import * as reducers from './reducers';
+import rootSaga from './sagas/root';
+import Root from './components/Root';
 
 const reducer = combineReducers(reducers);
 const sagaMiddleware = createSagaMiddleware();
@@ -31,5 +31,5 @@ const provider = (
 
 sagaMiddleware.run(rootSaga);
 
-var container = document.getElementById("main");
+const container = document.getElementById('main');
 ReactDOM.render(provider, container);

@@ -1,39 +1,42 @@
-const path = require("path");
-const HtmlPlugin = require("html-webpack-plugin");
+const path = require('path');
+const HtmlPlugin = require('html-webpack-plugin');
 
 const htmlPlugin = new HtmlPlugin({
-  template: "./src/index.html",
-  filename: "index.html"
+  template: './src/index.html',
+  filename: 'index.html',
 });
 
 module.exports = {
-  entry: ["webpack/hot/dev-server", "babel-polyfill", "./src/main.js"],
+  entry: ['webpack/hot/dev-server', 'babel-polyfill', './src/main.jsx'],
   resolve: {
+    extensions: ['.js', '.jsx'],
     alias: {
-      Root: path.resolve(__dirname, "src"),
-      Components: path.resolve(__dirname, "src/components"),
-      Events: path.resolve(__dirname, "src/events"),
-      Models: path.resolve(__dirname, "src/models"),
-      Lib: path.resolve(__dirname, "src/lib"),
-      ContractArtifacts: path.resolve(__dirname, "../build/contracts")
-    }
+      Root: path.resolve(__dirname, 'src'),
+      Components: path.resolve(__dirname, 'src/components'),
+      Constants: path.resolve(__dirname, 'src/constants'),
+      Events: path.resolve(__dirname, 'src/events'),
+      Models: path.resolve(__dirname, 'src/models'),
+      Reducers: path.resolve(__dirname, 'src/reducers'),
+      Lib: path.resolve(__dirname, 'src/lib'),
+      ContractArtifacts: path.resolve(__dirname, '../build/contracts'),
+    },
   },
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.jsx?$/,
         exclude: /node_modules/,
         use: {
-          loader: "babel-loader"
-        }
+          loader: 'babel-loader',
+        },
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"]
-      }
-    ]
+        use: ['style-loader', 'css-loader'],
+      },
+    ],
   },
   plugins: [
-    htmlPlugin
-  ]
+    htmlPlugin,
+  ],
 };
