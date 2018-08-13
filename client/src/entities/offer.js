@@ -44,7 +44,11 @@ export function getDetails(offer) {
   return offer.get('details');
 }
 
-export function detailsLoaded(offer) {
+export function detailsIsPending(offer) {
+  return pipe(getDetails, AsyncContent.isPending)(offer);
+}
+
+export function detailsIsLoaded(offer) {
   return pipe(getDetails, AsyncContent.isLoaded)(offer);
 }
 
@@ -78,6 +82,10 @@ export function getThumbnailUrl(offer) {
   if (imageHashes.isEmpty()) return null;
 
   return `https://ipfs.io/ipfs/${imageHashes.first()}`;
+}
+
+export function getDetailedDescription(offer) {
+  return offer.getIn(['details', 'content', 'detailedDescription']);
 }
 
 export function setAttributes(offer, attributes) {

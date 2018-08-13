@@ -3,6 +3,7 @@ import { partialRight, pipe } from 'ramda';
 
 import { findAndDelete } from 'Lib/list_utils';
 import * as Offer from './offer';
+import * as OfferDetails from './offer_details';
 import * as OfferAttributes from './offer_attributes';
 
 export const OfferCacheState = Record({ // eslint-disable-line import/prefer-default-export
@@ -94,4 +95,14 @@ export function addNewMyOffer(state, transactionHash, attributes) {
     partialRight(addOffer, [id, offer]),
     partialRight(addNewMyOfferId, [id]),
   )(state);
+}
+
+export function markOfferDetailsLoaddingInProgress(state, id) {
+  return state.setIn(['offers', id, 'details', 'status'], 'inProgress');
+}
+
+export function markOfferDetailsLoaddingLoaded(state, id, details) {
+  return state
+    .setIn(['offers', id, 'details', 'status'], 'loaded')
+    .setIn(['offers', id, 'details', 'content'], OfferDetails.from(details));
 }

@@ -13,6 +13,10 @@ export function loaded(content) {
   });
 }
 
+export function isPending(content) {
+  return content.get('status') === 'pending';
+}
+
 export function isLoaded(content) {
   return content.get('status') === 'loaded';
 }

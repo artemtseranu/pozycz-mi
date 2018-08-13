@@ -7,7 +7,14 @@ import * as Offer from 'Entities/offer';
 import * as OfferAttributes from 'Entities/offer_attributes';
 
 import {
-  OfferCacheState, addCreatedOffers, addOffers, addMyOfferIds, addPendingOffer, addNewMyOffer,
+  OfferCacheState,
+  addCreatedOffers,
+  addOffers,
+  addMyOfferIds,
+  addPendingOffer,
+  addNewMyOffer,
+  markOfferDetailsLoaddingInProgress,
+  markOfferDetailsLoaddingLoaded,
 } from 'Entities/offer_cache_state';
 
 import * as Events from 'Events/offer_cache';
@@ -34,11 +41,14 @@ const handlers = {
   ),
 
   [MyOffersEvents.Init.SUCCEEDED]: (state, event) => {
-    const [newOffers, newMyOfferIds] = event.offerCreatedEvents.reduce(([map, list], ethereumEvent) => {
-      const offer = Offer.fromEthereumEvent(ethereumEvent);
-      const id = Offer.getId(offer);
-      return [map.set(id, offer), list.push(id)];
-    }, [Map(), List()]);
+    const [newOffers, newMyOfferIds] = event.offerCreatedEvents.reduce(
+      ([map, list], ethereumEvent) => {
+        const offer = Offer.fromEthereumEvent(ethereumEvent);
+        const id = Offer.getId(offer);
+        return [map.set(id, offer), list.push(id)];
+      },
+      [Map(), List()],
+    );
 
     return pipe(
       partialRight(addOffers, [newOffers]),
@@ -56,6 +66,14 @@ const handlers = {
     const attributes = OfferAttributes.from(args);
     return addNewMyOffer(state, transactionHash, attributes);
   },
+
+  [MyOffersEvents.LoadOfferDetails.STARTED]: (state, { id }) => (
+    markOfferDetailsLoaddingInProgress(state, id)
+  ),
+
+  [MyOffersEvents.LoadOfferDetails.SUCCEEDED]: (state, { id, details }) => (
+    markOfferDetailsLoaddingLoaded(state, id, details)
+  ),
 };
 
 export default create(handlers, initialState);

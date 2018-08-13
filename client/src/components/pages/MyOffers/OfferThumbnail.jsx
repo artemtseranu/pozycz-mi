@@ -7,10 +7,10 @@ import * as Offer from 'Entities/offer';
 
 const styles = theme => ({ // eslint-disable-line no-unused-vars
   container: {
-    width: 100,
-    height: 100,
-    maxWidth: 100,
-    maxHeight: 100,
+    width: 50,
+    height: 50,
+    maxWidth: 50,
+    maxHeight: 50,
     textAlign: 'center',
     padding: 5,
     border: '1px solid grey',
@@ -31,7 +31,7 @@ class OfferThumbnail extends React.Component { // eslint-disable-line react/pref
     const { classes } = this.props; // eslint-disable-line react/prop-types, no-unused-vars
     const { offer } = this.props;
 
-    if (!Offer.detailsLoaded(offer) || !Offer.getThumbnailUrl(offer)) {
+    if (!Offer.detailsIsLoaded(offer) || !Offer.getThumbnailUrl(offer)) {
       return (<div className={classes.noImage} />);
     }
 

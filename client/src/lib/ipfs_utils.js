@@ -34,7 +34,25 @@ export function getFile(multihash, config = defaultConfig) {
         reject(error);
       }
 
-      console.log(files);
+      console.log(files[0]);
+    });
+  });
+}
+
+export function getJson(multihash, config = defaultConfig) {
+  return new Promise((resolve, reject) => {
+    const ipfs = getIpfs(config);
+
+    ipfs.files.get(multihash, (error, files) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      const file = files[0];
+      const content = file.content.toString();
+      const json = JSON.parse(content);
+      resolve(json);
     });
   });
 }
