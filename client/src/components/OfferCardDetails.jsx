@@ -11,6 +11,7 @@ const styles = () => ({
 
 const OfferDetails = (props) => {
   const { offer } = props;
+  console.log(offer.toJS());
 
   if (Offer.detailsIsLoaded(offer)) {
     return (

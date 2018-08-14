@@ -2,14 +2,17 @@ import { Record } from 'immutable';
 import { pipe } from 'ramda';
 
 import { bytes32ToMultihash } from 'Lib/ipfs_utils';
+
 import * as AsyncContent from './async_content';
 import * as OfferDetails from './offer_details';
 import * as OfferAttributes from './offer_attributes';
+import * as Operation from './operation';
 
 export const Offer = Record({
   transactionHash: '',
   attributes: OfferAttributes.OfferAttributes(),
   details: AsyncContent.AsyncContent(),
+  loadDetails: Operation.Operation(),
 });
 
 export function fromOfferCreatedEvent({ transactionHash, args }) {
@@ -46,11 +49,11 @@ export function getDetails(offer) {
 }
 
 export function detailsIsPending(offer) {
-  return pipe(getDetails, AsyncContent.isPending)(offer);
+  return offer.getIn(['loadDetails', 'status']) === 'pending';
 }
 
 export function detailsIsLoaded(offer) {
-  return pipe(getDetails, AsyncContent.isLoaded)(offer);
+  return offer.getIn(['loadDetails', 'status']) === 'success';
 }
 
 export function getTransactionHash(offer) {
@@ -78,7 +81,9 @@ export function getDetailsMultihash(offer) {
 }
 
 export function getThumbnailUrl(offer) {
-  const imageHashes = pipe(getDetails, AsyncContent.getContent, OfferDetails.getImageHashes)(offer);
+  // const imageHashes = pipe(getDetails, AsyncContent.getContent, OfferDetails.getImageHashes)(offer);
+  console.log(offer.toJS());
+  const imageHashes = offer.getIn(['loadDetails', 'result', 'imageHashes']);
 
   if (imageHashes.isEmpty()) return null;
 
@@ -86,7 +91,7 @@ export function getThumbnailUrl(offer) {
 }
 
 export function getDetailedDescription(offer) {
-  return offer.getIn(['details', 'content', 'detailedDescription']);
+  return offer.getIn(['loadDetails', 'result', 'detailedDescription']);
 }
 
 export function setAttributes(offer, attributes) {

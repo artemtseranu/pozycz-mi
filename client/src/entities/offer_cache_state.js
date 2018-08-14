@@ -2,9 +2,11 @@ import { List, Map, Record } from 'immutable';
 import { partialRight, pipe } from 'ramda';
 
 import { findAndDelete } from 'Lib/list_utils';
+
 import * as Offer from './offer';
 import * as OfferDetails from './offer_details';
 import * as OfferAttributes from './offer_attributes';
+import * as Operation from './operation';
 
 export const OfferCacheState = Record({ // eslint-disable-line import/prefer-default-export
   createdOffers: Map(),
@@ -120,4 +122,19 @@ export function updateOnDiscoverOffersInitSucceeded(offerCache, event) {
     .mergeIn(['offers'], offers)
     .update('offerIds', list => list.unshift(...ids))
     .set('earliestBlock', earliestBlock);
+}
+
+function updateOfferLoadDetails(offerCache, id, loadDetails) {
+  return offerCache.updateIn(['offers', id], offer => offer.set('loadDetails', loadDetails));
+}
+
+export function updateOnLoadOfferDetailsSucceeded(offerCache, event) {
+  const details = OfferDetails.fromJSON(event.details);
+  const loadDetails = Operation.success(details);
+  return updateOfferLoadDetails(offerCache, event.id, loadDetails);
+}
+
+export function updateOnLoadOfferDetailsFailed(offerCache, event) {
+  const loadDetails = Operation.failure(event.errorMessage);
+  return updateOfferLoadDetails(offerCache, event.id, loadDetails);
 }

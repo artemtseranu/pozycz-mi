@@ -5,7 +5,7 @@ import {
 } from 'redux-saga/effects';
 
 import { currentAccount, getEvents } from 'Lib/ethereum_utils';
-import { getJson } from 'Lib/ipfs_utils';
+import { getJSON } from 'Lib/ipfs_utils';
 import { rootSelector } from 'Lib/reducer_utils';
 import * as Events from 'Events/my_offers';
 import * as EthereumState from 'Entities/ethereum_state';
@@ -25,7 +25,7 @@ function* loadOfferDetails(id) {
 
   try {
     yield call(delay, 0);
-    details = yield call(getJson, Offer.getDetailsMultihash(offer), { timeout: 5000 });
+    details = yield call(getJSON, Offer.getDetailsMultihash(offer), { timeout: 5000 });
   } catch (error) {
     const errorMessage = `Failed to load offer details from IPFS. ${error.message}`;
     yield put({ type: Events.LoadOfferDetails.FAILED, id, errorMessage });

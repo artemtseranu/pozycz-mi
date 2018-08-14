@@ -25,6 +25,7 @@ import * as EthereumEvents from 'Events/ethereum';
 import * as MyOffersEvents from 'Events/my_offers';
 import * as CreateOfferEvents from 'Events/create_offer';
 import * as DiscoverOffersEvents from 'Events/discover_offers';
+import * as IpfsEvents from 'Events/ipfs';
 
 const initialState = OfferCacheState();
 
@@ -84,6 +85,9 @@ const handlers = {
   ),
 
   [DiscoverOffersEvents.Init.SUCCEEDED]: OfferCache.updateOnDiscoverOffersInitSucceeded,
+
+  [IpfsEvents.LoadOfferDetails.SUCCEEDED]: OfferCache.updateOnLoadOfferDetailsSucceeded,
+  [IpfsEvents.LoadOfferDetails.FAILED]: OfferCache.updateOnLoadOfferDetailsFailed,
 };
 
 export default create(handlers, initialState);

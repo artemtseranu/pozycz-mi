@@ -1,8 +1,14 @@
 import {
-  all, call, put, select, takeEvery,
+  all,
+  call,
+  put,
+  select,
+  spawn,
+  takeEvery,
 } from 'redux-saga/effects';
 
 import { getEvents } from 'Lib/ethereum_utils';
+import { loadOfferDetails } from 'Lib/saga_utils';
 
 import { getInitStatus } from 'Entities/discover_offers_page';
 import * as Ethereum from 'Entities/ethereum_state';
@@ -37,6 +43,12 @@ function* init() {
   }
 
   yield put({ type: Events.Init.SUCCEEDED, offerCreatedEvents, earliestBlock });
+
+  const offerIds = offerCreatedEvents.map(offerCreatedEvent => (
+    parseInt(offerCreatedEvent.args.id, 10)
+  ));
+
+  yield spawn(loadOfferDetails, offerIds);
 }
 
 function* watchMounted() {

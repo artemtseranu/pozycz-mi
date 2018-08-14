@@ -51,7 +51,7 @@ export function getFile(multihash, _config) {
   });
 }
 
-export function getJson(multihash, _config) {
+export function getJSON(multihash, _config) {
   const config = _config ? { ...defaultConfig, ..._config } : defaultConfig;
 
   return new Promise((resolve, reject) => {

@@ -5,7 +5,17 @@ export const OfferDetails = Record({ // eslint-disable-line import/prefer-defaul
   imageHashes: List(),
 });
 
+// TODO: remove
 export function from(obj) {
+  const imageHashes = List(obj.imageHashes);
+
+  return OfferDetails({
+    ...obj,
+    imageHashes,
+  });
+}
+
+export function fromJSON(obj) {
   const imageHashes = List(obj.imageHashes);
 
   return OfferDetails({

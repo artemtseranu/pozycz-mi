@@ -35,7 +35,7 @@ class DiscoverOffers extends React.Component {
         );
       case 'success':
         return (
-          <OfferCardList offers={offers} keyFn={Offer.getId} />
+          <OfferCardList offers={offers} keyFn={Offer.getId} direction="column-reverse" />
         );
       case 'failure':
         return (
