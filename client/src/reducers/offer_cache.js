@@ -15,6 +15,7 @@ import {
   addNewMyOffer,
   markOfferDetailsLoaddingInProgress,
   markOfferDetailsLoaddingLoaded,
+  markOfferDetailsLoaddingFailed,
 } from 'Entities/offer_cache_state';
 
 import * as Events from 'Events/offer_cache';
@@ -73,6 +74,10 @@ const handlers = {
 
   [MyOffersEvents.LoadOfferDetails.SUCCEEDED]: (state, { id, details }) => (
     markOfferDetailsLoaddingLoaded(state, id, details)
+  ),
+
+  [MyOffersEvents.LoadOfferDetails.FAILED]: (state, { id, errorMessage }) => (
+    markOfferDetailsLoaddingFailed(state, id, errorMessage)
   ),
 };
 

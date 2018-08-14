@@ -106,3 +106,9 @@ export function markOfferDetailsLoaddingLoaded(state, id, details) {
     .setIn(['offers', id, 'details', 'status'], 'loaded')
     .setIn(['offers', id, 'details', 'content'], OfferDetails.from(details));
 }
+
+export function markOfferDetailsLoaddingFailed(state, id, errorMessage) {
+  return state
+    .setIn(['offers', id, 'details', 'status'], 'failed')
+    .setIn(['offers', id, 'details', 'errorMessage'], errorMessage);
+}

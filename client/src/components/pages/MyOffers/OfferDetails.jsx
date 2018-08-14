@@ -12,17 +12,25 @@ const styles = () => ({
 const OfferDetails = (props) => {
   const { offer } = props;
 
-  if (!Offer.detailsIsLoaded(offer)) {
+  if (Offer.detailsIsLoaded(offer)) {
     return (
       <Typography>
-        Loading details...
+        {Offer.getDetailedDescription(offer)}
+      </Typography>
+    );
+  }
+
+  if (offer.getIn(['details', 'status']) === 'failed') {
+    return (
+      <Typography>
+        {offer.getIn(['details', 'errorMessage'])}
       </Typography>
     );
   }
 
   return (
     <Typography>
-      {Offer.getDetailedDescription(offer)}
+      Loading details...
     </Typography>
   );
 };

@@ -9,7 +9,6 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 
 import * as Offer from 'Entities/offer';
-import * as Events from 'Events/my_offers';
 
 import OfferThumbnail from './OfferThumbnail';
 import OfferDetails from './OfferDetails';
@@ -21,14 +20,6 @@ const styles = theme => ({
 });
 
 class OfferComponent extends React.Component { // eslint-disable-line react/prefer-stateless-function, max-len
-  componentDidMount() {
-    const { dispatch } = this.props; // eslint-disable-line react/prop-types
-    const { offer } = this.props;
-    const id = Offer.getId(offer);
-
-    if (id) dispatch({ type: Events.OFFER_MOUNTED, id });
-  }
-
   render() {
     const { classes } = this.props; // eslint-disable-line react/prop-types
     const { offer } = this.props;

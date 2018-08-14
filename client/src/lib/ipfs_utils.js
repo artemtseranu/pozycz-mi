@@ -4,13 +4,16 @@ import Base58 from 'bs58';
 const defaultConfig = {
   host: 'localhost',
   port: 5001,
+  timeout: 5000,
 };
 
 function getIpfs(config) {
   return IpfsApi(config.host, config.port);
 }
 
-export function addFile(content, config = defaultConfig) {
+export function addFile(content, _config) {
+  const config = _config ? { ...defaultConfig, ..._config } : defaultConfig;
+
   return new Promise((resolve, reject) => {
     const ipfs = getIpfs(config);
     const buffer = Buffer.from(content);
@@ -18,6 +21,7 @@ export function addFile(content, config = defaultConfig) {
     ipfs.files.add(buffer, (error, result) => {
       if (error) {
         reject(error);
+        return;
       }
 
       resolve(result[0].hash);
@@ -25,22 +29,15 @@ export function addFile(content, config = defaultConfig) {
   });
 }
 
-export function getFile(multihash, config = defaultConfig) {
+export function getFile(multihash, _config) {
+  const config = _config ? { ...defaultConfig, ..._config } : defaultConfig;
+
   return new Promise((resolve, reject) => {
-    const ipfs = getIpfs(config);
+    setTimeout(
+      () => reject({ message: 'TimeoutError' }),
+      config.timeout,
+    );
 
-    ipfs.files.get(multihash, (error, files) => {
-      if (error) {
-        reject(error);
-      }
-
-      console.log(files[0]);
-    });
-  });
-}
-
-export function getJson(multihash, config = defaultConfig) {
-  return new Promise((resolve, reject) => {
     const ipfs = getIpfs(config);
 
     ipfs.files.get(multihash, (error, files) => {
@@ -49,11 +46,21 @@ export function getJson(multihash, config = defaultConfig) {
         return;
       }
 
-      const file = files[0];
-      const content = file.content.toString();
-      const json = JSON.parse(content);
-      resolve(json);
+      resolve(files[0].content);
     });
+  });
+}
+
+export function getJson(multihash, _config) {
+  const config = _config ? { ...defaultConfig, ..._config } : defaultConfig;
+
+  return new Promise((resolve, reject) => {
+    getFile(multihash, config)
+      .then((content) => {
+        const json = JSON.parse(content);
+        resolve(json);
+      })
+      .catch(reject);
   });
 }
 
