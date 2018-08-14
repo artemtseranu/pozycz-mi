@@ -14,7 +14,7 @@ import * as OfferCache from 'Entities/offer_cache_state';
 
 import * as IpfsEvents from 'Events/ipfs';
 
-function* loadSingleOfferDetails(id) {
+export function* loadSingleOfferDetails(id) {
   const offer = yield select(state => OfferCache.getOffer(state.offerCache, id));
 
   // TODO detailsIsPending -> isDetailsPending

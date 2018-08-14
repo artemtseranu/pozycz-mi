@@ -1,10 +1,11 @@
 import {
-  all, call, put, select, takeEvery,
+  all, call, put, select, spawn, takeEvery,
 } from 'redux-saga/effects';
 import TruffleContract from 'truffle-contract';
 
-import { currentAccount, getBlockNumber } from 'Lib/ethereum_utils';
+import { getBlockNumber } from 'Lib/ethereum_utils';
 import { rootSelector } from 'Lib/reducer_utils';
+import { loadSingleOfferDetails } from 'Lib/saga_utils';
 
 import * as EthereumState from 'Entities/ethereum_state';
 import * as OperationState from 'Entities/operation_state';
@@ -42,15 +43,9 @@ function* init({ dispatch }) {
     return;
   }
 
-  const myOfferCreated = offersContract.OfferCreated(
-    { owner: currentAccount() },
-  );
+  const offerCreated = offersContract.OfferCreated();
 
-  myOfferCreated.watch((error, event) => {
-    if (!error && event.blockNumber > initBlockNumber) {
-      dispatch({ type: Events.MY_OFFER_CREATED, ethereumEvent: event });
-    }
-  });
+  const account = window.web3.eth.accounts[0];
 
   yield put({
     type: Events.Init.SUCCEEDED,
@@ -59,17 +54,38 @@ function* init({ dispatch }) {
     },
     initBlockNumber,
     watchers: {
-      myOfferCreated,
+      offerCreated,
     },
   });
+
+  offerCreated.watch((error, event) => {
+    if (!error && event.blockNumber > initBlockNumber) {
+      dispatch({
+        type: Events.OFFER_CREATED_EVENT_RECEIVED,
+        offerCreatedEvent: event,
+        isOwned: event.args.owner === account,
+      });
+    }
+  });
+}
+
+function* handleOfferCreatedEventReceived({ offerCreatedEvent, isOwned }) {
+  yield put({ type: Events.OFFER_CREATED, offerCreatedEvent, isOwned });
+  const id = parseInt(offerCreatedEvent.args.id, 10);
+  yield spawn(loadSingleOfferDetails, id);
 }
 
 function* watchRequired() {
   yield takeEvery(Events.REQUIRED, init);
 }
 
+function* watchOfferCreatedEventReceived() {
+  yield takeEvery(Events.OFFER_CREATED_EVENT_RECEIVED, handleOfferCreatedEventReceived);
+}
+
 export default function* () {
   yield all([
     watchRequired(),
+    watchOfferCreatedEventReceived(),
   ]);
 }

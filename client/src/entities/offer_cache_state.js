@@ -138,3 +138,34 @@ export function updateOnLoadOfferDetailsFailed(offerCache, event) {
   const loadDetails = Operation.failure(event.errorMessage);
   return updateOfferLoadDetails(offerCache, event.id, loadDetails);
 }
+
+export function updateOnOfferCreated(offerCache, event) {
+  const { transactionHash, args } = event.offerCreatedEvent;
+  const id = parseInt(args.id, 10);
+  const attributes = OfferAttributes.OfferAttributes({ ...args, id });
+
+  const [pendingOffer, updatedPendingOffers] = findAndDelete(
+    offerCache.get('pendingOffers'),
+    _pendingOffer => _pendingOffer.get('transactionHash') === transactionHash,
+  );
+
+  let updatedOfferCache = offerCache;
+  let offer;
+
+  if (pendingOffer) {
+    offer = pendingOffer.set('attributes', attributes);
+    updatedOfferCache = updatedOfferCache.set('pendingOffers', updatedPendingOffers);
+  } else {
+    offer = Offer.Offer({ transactionHash, attributes });
+  }
+
+  updatedOfferCache = updatedOfferCache
+    .setIn(['offers', id], offer)
+    .update('offerIds', list => list.push(id));
+
+  if (event.isOwned) {
+    updatedOfferCache = updatedOfferCache.update('myOfferIds', list => list.push(id));
+  }
+
+  return updatedOfferCache;
+}

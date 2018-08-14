@@ -1,13 +1,13 @@
+import { List } from 'immutable';
+
 export function findAndDelete(list, fn) {
-  if (list.isEmpty()) {
-    return list;
-  }
+  if (list.isEmpty()) return [undefined, List()];
 
   const head = list.first();
 
-  if (fn(head)) {
-    return list.rest();
-  }
+  if (fn(head)) return [head, list.rest()];
 
-  return findAndDelete(list.rest(), fn).unshift(head);
+  const [elem, rest] = findAndDelete(list.rest(), fn);
+
+  return [elem, rest.unshift(head)];
 }

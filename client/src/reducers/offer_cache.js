@@ -12,13 +12,13 @@ import {
   addOffers,
   addMyOfferIds,
   addPendingOffer,
-  addNewMyOffer,
   markOfferDetailsLoaddingInProgress,
   markOfferDetailsLoaddingLoaded,
   markOfferDetailsLoaddingFailed,
 } from 'Entities/offer_cache_state';
 
 import * as OfferCache from 'Entities/offer_cache_state';
+import * as Operation from 'Entities/operation';
 
 import * as Events from 'Events/offer_cache';
 import * as EthereumEvents from 'Events/ethereum';
@@ -62,15 +62,23 @@ const handlers = {
   },
 
   [CreateOfferEvents.SendCreateOfferTransaction.SUCCEEDED]: (state, event) => {
-    const offer = Offer.pending(event.transactionHash, event.description, event.details);
+    const { transactionHash, description, details } = event;
+
+    const offer = Offer.Offer({
+      transactionHash,
+      attributes: OfferAttributes.OfferAttributes({ description }),
+      loadDetails: Operation.success(details),
+    });
+
     return addPendingOffer(state, offer);
   },
 
-  [EthereumEvents.MY_OFFER_CREATED]: (state, event) => {
-    const { args, transactionHash } = event.ethereumEvent;
-    const attributes = OfferAttributes.from(args);
-    return addNewMyOffer(state, transactionHash, attributes);
-  },
+  // [EthereumEvents.OFFER_CREATED]: (state, event) => {
+  //   const { args, transactionHash } = event.offerCreatedEvent;
+  //   const attributes = OfferAttributes.from(args);
+  //   return addNewMyOffer(state, transactionHash, attributes);
+  // },
+  [EthereumEvents.OFFER_CREATED]: OfferCache.updateOnOfferCreated,
 
   [MyOffersEvents.LoadOfferDetails.STARTED]: (state, { id }) => (
     markOfferDetailsLoaddingInProgress(state, id)
