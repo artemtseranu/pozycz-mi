@@ -11,7 +11,6 @@ const styles = () => ({
 
 const OfferDetails = (props) => {
   const { offer } = props;
-  console.log(offer.toJS());
 
   if (Offer.detailsIsLoaded(offer)) {
     return (
@@ -21,10 +20,11 @@ const OfferDetails = (props) => {
     );
   }
 
-  if (offer.getIn(['details', 'status']) === 'failed') {
+  if (offer.getIn(['loadDetails', 'status']) === 'failure') {
     return (
       <Typography>
-        {offer.getIn(['details', 'errorMessage'])}
+        Failed to load offer details from IPFS.
+        {offer.getIn(['loadDetails', 'errorMessage'])}
       </Typography>
     );
   }

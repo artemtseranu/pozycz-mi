@@ -29,7 +29,7 @@ function* loadSingleOfferDetails(id) {
   try {
     details = yield call(getJSON, Offer.getDetailsMultihash(offer));
   } catch (error) {
-    yield put({ type: IpfsEvents.LoadOfferDetails.FAILED, errorMessage: error.message });
+    yield put({ type: IpfsEvents.LoadOfferDetails.FAILED, id, errorMessage: error.message });
     return;
   }
 

@@ -4,7 +4,6 @@ import { pipe } from 'ramda';
 import { bytes32ToMultihash } from 'Lib/ipfs_utils';
 
 import * as AsyncContent from './async_content';
-import * as OfferDetails from './offer_details';
 import * as OfferAttributes from './offer_attributes';
 import * as Operation from './operation';
 
@@ -81,8 +80,6 @@ export function getDetailsMultihash(offer) {
 }
 
 export function getThumbnailUrl(offer) {
-  // const imageHashes = pipe(getDetails, AsyncContent.getContent, OfferDetails.getImageHashes)(offer);
-  console.log(offer.toJS());
   const imageHashes = offer.getIn(['loadDetails', 'result', 'imageHashes']);
 
   if (imageHashes.isEmpty()) return null;
