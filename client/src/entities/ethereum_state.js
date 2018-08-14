@@ -1,5 +1,7 @@
 import { Map, Record } from 'immutable';
 
+import { getter } from 'Lib/entity_utils';
+
 import * as OperationState from 'Entities/operation_state';
 
 export const EthereumState = Record({
@@ -8,6 +10,8 @@ export const EthereumState = Record({
   contracts: Map(),
   watchers: Map(),
 });
+
+export const getInitBlockNumber = getter('initBlockNumber');
 
 export function getOffersContract(state) {
   return state.getIn(['contracts', 'offers']);
@@ -34,6 +38,5 @@ export function setContracts(state, contracts) {
 }
 
 export function setWatchers(state, watchers) {
-  console.log(watchers);
   return state.set('watchers', Map(watchers));
 }

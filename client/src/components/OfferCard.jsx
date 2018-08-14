@@ -10,8 +10,8 @@ import Typography from '@material-ui/core/Typography';
 
 import * as Offer from 'Entities/offer';
 
-import OfferThumbnail from './OfferThumbnail';
-import OfferDetails from './OfferDetails';
+import OfferThumbnail from './OfferCardThumbnail';
+import OfferDetails from './OfferCardDetails';
 
 const styles = theme => ({
   card: {
@@ -19,7 +19,7 @@ const styles = theme => ({
   },
 });
 
-class OfferComponent extends React.Component { // eslint-disable-line react/prefer-stateless-function, max-len
+class OfferCard extends React.Component { // eslint-disable-line react/prefer-stateless-function, max-len
   render() {
     const { classes } = this.props; // eslint-disable-line react/prop-types
     const { offer } = this.props;
@@ -48,11 +48,11 @@ class OfferComponent extends React.Component { // eslint-disable-line react/pref
   }
 }
 
-OfferComponent.propTypes = {
+OfferCard.propTypes = {
   offer: PropTypes.instanceOf(Offer.Offer).isRequired,
 };
 
 export default pipe(
   withStyles(styles),
   connect(),
-)(OfferComponent);
+)(OfferCard);

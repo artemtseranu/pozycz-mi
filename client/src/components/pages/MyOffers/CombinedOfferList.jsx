@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 
 import * as Offer from 'Entities/offer';
 import * as OfferCacheState from 'Entities/offer_cache_state';
-import OfferList from './OfferList';
+import OfferCardList from 'Components/OfferCardList';
 
 const styles = {
 
@@ -21,12 +21,12 @@ class CombinedOfferList extends React.Component {
 
     return (
       <React.Fragment>
-        <OfferList
+        <OfferCardList
           title="Pending offers"
           keyFn={offer => Offer.getTransactionHash(offer)}
           offers={pendingOffers}
         />
-        <OfferList
+        <OfferCardList
           title="Recorded offers"
           keyFn={offer => Offer.getId(offer)}
           offers={offers}

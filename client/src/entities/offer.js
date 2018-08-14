@@ -12,16 +12,17 @@ export const Offer = Record({
   details: AsyncContent.AsyncContent(),
 });
 
-// TODO: REMOVE
-export function fromOfferCreatedEvent(event) {
-  const id = parseInt(event.args.id, 10);
-  const attributes = OfferAttributes({ ...event.args, id });
+export function fromOfferCreatedEvent({ transactionHash, args }) {
+  const id = parseInt(args.id, 10);
+  const attributes = OfferAttributes.OfferAttributes({ ...args, id });
 
   return Offer({
+    transactionHash,
     attributes,
   });
 }
 
+// TODO: REMOVE
 export function fromEthereumEvent(ethereumEvent) {
   const { transactionHash, args } = ethereumEvent;
   const attributes = OfferAttributes.from(args);

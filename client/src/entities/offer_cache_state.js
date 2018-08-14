@@ -13,22 +13,16 @@ export const OfferCacheState = Record({ // eslint-disable-line import/prefer-def
   offerIds: List(),
   myOfferIds: List(),
   pendingOffers: List(),
+
+  earliestBlock: undefined,
 });
 
 export function getOffer(state, id) {
   return state.getIn(['offers', id]);
 }
 
-export function getOffers(state, ids) {
-  return ids.reduce((result, id) => {
-    const offer = getOffer(state, id);
-
-    if (!offer) {
-      return result;
-    }
-
-    return result.push(offer);
-  }, List());
+export function getOffers(offerCache) {
+  return offerCache.get('offerIds').map(id => getOffer(offerCache, id));
 }
 
 export function getMyOfferIds(state) {
@@ -111,4 +105,19 @@ export function markOfferDetailsLoaddingFailed(state, id, errorMessage) {
   return state
     .setIn(['offers', id, 'details', 'status'], 'failed')
     .setIn(['offers', id, 'details', 'errorMessage'], errorMessage);
+}
+
+export function updateOnDiscoverOffersInitSucceeded(offerCache, event) {
+  const { offerCreatedEvents, earliestBlock } = event;
+
+  const [offers, ids] = offerCreatedEvents.reduce(([map, list], offerCreatedEvent) => {
+    const offer = Offer.fromOfferCreatedEvent(offerCreatedEvent);
+    const id = Offer.getId(offer);
+    return [map.set(id, offer), list.push(id)];
+  }, [Map(), List()]);
+
+  return offerCache
+    .mergeIn(['offers'], offers)
+    .update('offerIds', list => list.unshift(...ids))
+    .set('earliestBlock', earliestBlock);
 }

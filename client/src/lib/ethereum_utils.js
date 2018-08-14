@@ -30,7 +30,7 @@ export function getBlockNumber() {
   });
 }
 
-export function getAllEvents(Event, filters, fromBlock = 0, toBlock = 'latest') {
+export function getEvents(Event, filters, fromBlock = 0, toBlock = 'latest') {
   requireWeb3();
 
   return new Promise((resolve, reject) => {

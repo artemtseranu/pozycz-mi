@@ -4,7 +4,7 @@ import {
   all, call, spawn, put, select, takeEvery,
 } from 'redux-saga/effects';
 
-import { currentAccount, getAllEvents } from 'Lib/ethereum_utils';
+import { currentAccount, getEvents } from 'Lib/ethereum_utils';
 import { getJson } from 'Lib/ipfs_utils';
 import { rootSelector } from 'Lib/reducer_utils';
 import * as Events from 'Events/my_offers';
@@ -56,7 +56,7 @@ function* init() {
 
   try {
     offerCreatedEvents = yield call(
-      getAllEvents, offersContract.OfferCreated, { owner: currentAccount() },
+      getEvents, offersContract.OfferCreated, { owner: currentAccount() },
     );
   } catch (error) {
     const errorMessage = `Failed to get past OfferCreated events. ${error.message}`;

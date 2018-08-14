@@ -18,10 +18,13 @@ import {
   markOfferDetailsLoaddingFailed,
 } from 'Entities/offer_cache_state';
 
+import * as OfferCache from 'Entities/offer_cache_state';
+
 import * as Events from 'Events/offer_cache';
 import * as EthereumEvents from 'Events/ethereum';
 import * as MyOffersEvents from 'Events/my_offers';
 import * as CreateOfferEvents from 'Events/create_offer';
+import * as DiscoverOffersEvents from 'Events/discover_offers';
 
 const initialState = OfferCacheState();
 
@@ -79,6 +82,8 @@ const handlers = {
   [MyOffersEvents.LoadOfferDetails.FAILED]: (state, { id, errorMessage }) => (
     markOfferDetailsLoaddingFailed(state, id, errorMessage)
   ),
+
+  [DiscoverOffersEvents.Init.SUCCEEDED]: OfferCache.updateOnDiscoverOffersInitSucceeded,
 };
 
 export default create(handlers, initialState);
