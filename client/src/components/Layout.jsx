@@ -70,6 +70,8 @@ class Layout extends React.Component {
         return 'My Offers';
       case Paths.CREATE_OFFER:
         return 'Create Offer';
+      case Paths.DISCOVER_OFFERS:
+        return 'Discover Offers';
       case Paths.ABOUT:
         return 'About';
       default:
@@ -154,7 +156,7 @@ class Layout extends React.Component {
             <ListItem button onClick={this.menuNavigator(Paths.MY_OFFERS)}>
               <ListItemText primary="My Offers" />
             </ListItem>
-            <ListItem button>
+            <ListItem button onClick={this.menuNavigator(Paths.DISCOVER_OFFERS)}>
               <ListItemText primary="Discover" />
             </ListItem>
           </List>
