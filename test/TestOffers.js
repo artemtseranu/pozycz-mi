@@ -1,57 +1,49 @@
 var Offers = artifacts.require("Offers");
 
 contract("Offers", (accounts) => {
-  describe("#createOffer", () => {
+  contract("#createOffer", () => {
     it("creates new offer", async () => {
       const instance = await Offers.deployed();
 
       await instance.createOffer.sendTransaction("Offer 1", "0x1", {from: accounts[0]});
 
-      const [owner, description, details, isOpen] = await instance.offers(1);
+      const [owner, description, details] = await instance.offers(1);
 
       assert.equal(owner, accounts[0]);
       assert.equal(description, "Offer 1");
       assert.equal(details, "0x1000000000000000000000000000000000000000000000000000000000000000");
-      assert.equal(isOpen, false);
     });
   });
 
-//   it("allows user to update offer details if they are its owner", async () => {
-//     const instance = await Offers.deployed();
+  contract("#updateOffer", () => {
+    let instance;
 
-//     await instance.updateOfferDetails.sendTransaction(1, "0x1a", {from: accounts[0]});
+    before(async () => {
+      instance = await Offers.deployed();
+      await instance.createOffer.sendTransaction("Offer 1", "0x1", {from: accounts[0]});
+    });
 
-//     const actualOffersDetails = await mapOffers(instance, offer => offer.details);
-//     const expectedOffersDetails = [
-//       "0x1a00000000000000000000000000000000000000000000000000000000000000",
-//       "0x2000000000000000000000000000000000000000000000000000000000000000",
-//       "0x3000000000000000000000000000000000000000000000000000000000000000"
-//     ];
+    it("updates offer if msg.sender is offer's owner", async () => {
+      await instance.updateOffer.sendTransaction(1, "Offer 1 - edited", "0x1a", {from: accounts[0]});
 
-//     assert.deepEqual(actualOffersDetails, expectedOffersDetails);
-//   });
+      const [_owner, description, details] = await instance.offers(1);
 
-//   it("disallows user to update offer details if they aren't its owner", async () => {
-//     const instance = await Offers.deployed();
+      assert.equal(description, "Offer 1 - edited");
+      assert.equal(details, "0x1a00000000000000000000000000000000000000000000000000000000000000");
+    });
 
-//     let errorMessage;
+    it("reverts if msg.sender isn't offer's owner", async () => {
+      const instance = await Offers.deployed();
 
-//     try {
-//       await instance.updateOfferDetails.sendTransaction(2, "0x2a", {from: accounts[0]});
-//     } catch (error) {
-//       errorMessage = error.message;
-//     }
+      let errorMessage;
 
-//     assert.equal(errorMessage, "VM Exception while processing transaction: revert");
-//   });
+      try {
+        await instance.updateOffer.sendTransaction(1, "Offer 1 - edited again", "0x1b", {from: accounts[1]});
+      } catch (error) {
+        errorMessage = error.message;
+      }
 
-  // TODO: check this
-  // it("handles weird inputs", async () => {
-  //   const instance = await Offers.deployed();
-
-  //   await instance.createOffer.sendTransaction("Offer 4", "QmTe8wa5tCniYFZxvjMDAvjy3xQ2No1kkw5ciLLSmz2k5v", {from: accounts[0]});
-
-  //   const [_owner, _description, details] = await instance.getOffer(4);
-  //   console.log(details);
-  // });
+      assert.equal(errorMessage, "VM Exception while processing transaction: revert", "Transaction wasn't reverted");
+    });
+  });
 });

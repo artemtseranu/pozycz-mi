@@ -5,7 +5,6 @@ contract Offers {
     address owner;
     string description;
     bytes32 details;
-    bool isOpen;
   }
 
   mapping(uint => Offer) public offers;
@@ -19,8 +18,7 @@ contract Offers {
     Offer memory offer = Offer({
       owner: owner,
       description: description,
-      details: details,
-      isOpen: false
+      details: details
     });
 
     uint id = offersIdSeq + 1;
@@ -28,11 +26,12 @@ contract Offers {
     emit OfferCreated({owner: owner, id: id, description: description, details: details});
   }
 
-//   function updateOfferDetails(uint id, bytes32 details) public {
-//     Offer storage offer = offers[id];
+  function updateOffer(uint id, string description, bytes32 details) public {
+    Offer storage offer = offers[id];
 
-//     require(offer.owner == msg.sender, "An offer can be updated only by its owner");
+    require(offer.owner == msg.sender, "Restricted to offer's owner");
 
-//     offer.details = details;
-//   }
+    offer.description = description;
+    offer.details = details;
+  }
 }
