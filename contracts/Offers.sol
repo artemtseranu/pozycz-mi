@@ -28,7 +28,8 @@ contract Offers {
       details: details
     });
 
-    uint id = offersIdSeq + 1;
+    offersIdSeq += 1;
+    uint id = offersIdSeq;
     offers[id] = offer;
     emit OfferCreated({owner: owner, id: id, description: description, details: details});
   }
