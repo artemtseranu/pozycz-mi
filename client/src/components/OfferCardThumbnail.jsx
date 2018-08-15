@@ -7,10 +7,10 @@ import * as Offer from 'Entities/offer';
 
 const styles = theme => ({ // eslint-disable-line no-unused-vars
   container: {
-    width: 50,
-    height: 50,
-    maxWidth: 50,
-    maxHeight: 50,
+    width: 72,
+    height: 72,
+    maxWidth: 72,
+    maxHeight: 72,
     textAlign: 'center',
     padding: 5,
     border: '1px solid grey',

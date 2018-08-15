@@ -124,7 +124,12 @@ class DiscoverOffers extends React.Component {
       case 'success':
         return (
           <React.Fragment>
-            <OfferCardList offers={offers} keyFn={Offer.getId} direction="column-reverse" />
+            <OfferCardList
+              offers={offers}
+              keyFn={Offer.getId}
+              direction="column-reverse"
+              whenEmpty="No offers found"
+            />
             <div className={classes.loadMoreControls}>
               {this.renderLoadMoreControls()}
             </div>

@@ -2,6 +2,7 @@ import { Record } from 'immutable';
 import { pipe } from 'ramda';
 
 import { bytes32ToMultihash } from 'Lib/ipfs_utils';
+import { getter } from 'Lib/entity_utils';
 
 import * as AsyncContent from './async_content';
 import * as OfferAttributes from './offer_attributes';
@@ -13,6 +14,8 @@ export const Offer = Record({
   details: AsyncContent.AsyncContent(),
   loadDetails: Operation.Operation(),
 });
+
+const getLoadDetails = getter('loadDetails');
 
 export function fromOfferCreatedEvent({ transactionHash, args }) {
   const id = parseInt(args.id, 10);
@@ -89,6 +92,10 @@ export function getThumbnailUrl(offer) {
 
 export function getDetailedDescription(offer) {
   return offer.getIn(['loadDetails', 'result', 'detailedDescription']);
+}
+
+export function isLoadDetailsCompleted(offer) {
+  return pipe(getLoadDetails, Operation.isCompleted)(offer);
 }
 
 export function setAttributes(offer, attributes) {

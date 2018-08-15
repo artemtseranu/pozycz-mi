@@ -22,3 +22,8 @@ export function success(result) {
 export function failure(errorMessage) {
   return Operation({ status: 'failure', errorMessage });
 }
+
+export function isCompleted(operation) {
+  const status = getStatus(operation);
+  return status === 'success' || status === 'failure';
+}
