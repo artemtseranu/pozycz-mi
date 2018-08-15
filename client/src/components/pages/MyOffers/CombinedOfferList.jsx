@@ -10,6 +10,9 @@ import * as Offer from 'Entities/offer';
 import * as OfferCacheState from 'Entities/offer_cache_state';
 import OfferCardList from 'Components/OfferCardList';
 
+import OfferCard from './OfferCard';
+import PendingOfferCard from './PendingOfferCard';
+
 const styles = {
 
 };
@@ -22,14 +25,16 @@ class CombinedOfferList extends React.Component {
     return (
       <React.Fragment>
         <OfferCardList
+          offers={pendingOffers}
+          OfferCardComponent={PendingOfferCard}
           title="Pending offers"
           keyFn={offer => Offer.getTransactionHash(offer)}
-          offers={pendingOffers}
         />
         <OfferCardList
+          offers={offers}
+          OfferCardComponent={OfferCard}
           title="Recorded offers"
           keyFn={offer => Offer.getId(offer)}
-          offers={offers}
           whenEmpty="You don't have any offers yet"
           direction="column-reverse"
         />

@@ -5,10 +5,9 @@ import { List } from 'immutable';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 
-import OfferCard from './OfferCard';
-
 const OfferCardList = (props) => {
   const {
+    OfferCardComponent,
     offers,
     keyFn,
     title,
@@ -43,7 +42,7 @@ const OfferCardList = (props) => {
 
   const offerCards = offers.map(offer => (
     <Grid item key={keyFn(offer)} xs={12}>
-      <OfferCard offer={offer} />
+      <OfferCardComponent offer={offer} />
     </Grid>
   ));
 
@@ -58,9 +57,10 @@ const OfferCardList = (props) => {
 };
 
 OfferCardList.propTypes = {
+  offers: PropTypes.instanceOf(List).isRequired,
+  OfferCardComponent: PropTypes.func.isRequired,
   title: PropTypes.string,
   keyFn: PropTypes.func.isRequired,
-  offers: PropTypes.instanceOf(List).isRequired,
   whenEmpty: PropTypes.string,
   direction: PropTypes.string,
 };

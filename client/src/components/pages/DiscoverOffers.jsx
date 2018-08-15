@@ -21,6 +21,8 @@ import * as Events from 'Events/discover_offers';
 
 import OfferCardList from 'Components/OfferCardList';
 
+import OfferCard from './DiscoverOffers/OfferCard';
+
 const styles = theme => ({
   loadMoreControls: {
     marginTop: theme.spacing.unit * 2,
@@ -126,6 +128,7 @@ class DiscoverOffers extends React.Component {
           <React.Fragment>
             <OfferCardList
               offers={offers}
+              OfferCardComponent={OfferCard}
               keyFn={Offer.getId}
               direction="column-reverse"
               whenEmpty="No offers found"

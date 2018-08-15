@@ -8,13 +8,14 @@ import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import UnfoldMore from '@material-ui/icons/UnfoldMore';
-import UnfoldLess from '@material-ui/icons/UnfoldLess';
+import UnfoldMoreIcon from '@material-ui/icons/UnfoldMore';
+import UnfoldLessIcon from '@material-ui/icons/UnfoldLess';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 import * as Offer from 'Entities/offer';
 
-import OfferThumbnail from './OfferCardThumbnail';
-import OfferDetails from './OfferCardDetails';
+import OfferThumbnail from 'Components/OfferCardThumbnail';
+import OfferDetails from 'Components/OfferCardDetails';
 
 const styles = theme => ({
   card: {
@@ -22,7 +23,7 @@ const styles = theme => ({
   },
 });
 
-class OfferCard extends React.Component { // eslint-disable-line react/prefer-stateless-function, max-len
+class OfferCard extends React.Component {
   constructor() {
     super();
 
@@ -58,7 +59,7 @@ class OfferCard extends React.Component { // eslint-disable-line react/prefer-st
     if (isDetailsOpen) {
       return (
         <Button mini onClick={this.hideDetails}>
-          <UnfoldLess />
+          <UnfoldLessIcon />
           Hide Details
         </Button>
       );
@@ -66,7 +67,7 @@ class OfferCard extends React.Component { // eslint-disable-line react/prefer-st
 
     return (
       <Button mini onClick={this.showDetails}>
-        <UnfoldMore />
+        <UnfoldMoreIcon />
         Show Details
       </Button>
     );
@@ -106,6 +107,10 @@ class OfferCard extends React.Component { // eslint-disable-line react/prefer-st
                   </Grid>
                   <Grid item xs={12}>
                     {this.renderToggleDetailsButton()}
+                    <Button mini onClick={this.handleClickDelete}>
+                      <DeleteIcon />
+                      Delete
+                    </Button>
                   </Grid>
                 </Grid>
               </Grid>
