@@ -38,9 +38,11 @@ contract Offers {
 
     offer.description = description;
     offer.details = details;
+    emit OfferUpdated({id: id, description: description, details: details});
   }
 
   function deleteOffer(uint id) public restrictedToOfferOwner(id) {
     delete offers[id];
+    emit OfferDeleted({id: id});
   }
 }
