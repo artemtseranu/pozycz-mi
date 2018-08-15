@@ -11,6 +11,10 @@ export const Operation = Record({
 export const getStatus = getter('status');
 export const getErrorMessage = getter('errorMessage');
 
+export function inProgress() {
+  return Operation({ status: 'inProgress' });
+}
+
 export function success(result) {
   return Operation({ status: 'success', result });
 }

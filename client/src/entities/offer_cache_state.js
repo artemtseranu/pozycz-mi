@@ -43,8 +43,9 @@ export function addCreatedOffers(state, offers) {
   return state.mergeIn(['createdOffers'], offers);
 }
 
-export function addOffers(state, offers) {
-  return state.mergeIn(['offers'], offers);
+// TODO: REMOVE
+export function addOffers(state, newOffers) {
+  return state.update('offers', offers => newOffers.merge(offers));
 }
 
 export function addOffer(state, id, offer) {
@@ -112,16 +113,31 @@ export function markOfferDetailsLoaddingFailed(state, id, errorMessage) {
 export function updateOnDiscoverOffersInitSucceeded(offerCache, event) {
   const { offerCreatedEvents, earliestBlock } = event;
 
-  const [offers, ids] = offerCreatedEvents.reduce(([map, list], offerCreatedEvent) => {
+  const [newOffers, ids] = offerCreatedEvents.reduce(([map, list], offerCreatedEvent) => {
     const offer = Offer.fromOfferCreatedEvent(offerCreatedEvent);
     const id = Offer.getId(offer);
     return [map.set(id, offer), list.push(id)];
   }, [Map(), List()]);
 
   return offerCache
-    .mergeIn(['offers'], offers)
+    .update('offers', offers => newOffers.merge(offers))
     .update('offerIds', list => list.unshift(...ids))
     .set('earliestBlock', earliestBlock);
+}
+
+export function updateOnLoadMoreOffersSucceeded(offerCache, event) {
+  const { offerCreatedEvents, newEarliestBlock } = event;
+
+  const [newOffers, ids] = offerCreatedEvents.reduce(([map, list], offerCreatedEvent) => {
+    const offer = Offer.fromOfferCreatedEvent(offerCreatedEvent);
+    const id = Offer.getId(offer);
+    return [map.set(id, offer), list.push(id)];
+  }, [Map(), List()]);
+
+  return offerCache
+    .update('offers', offers => newOffers.merge(offers))
+    .update('offerIds', list => list.unshift(...ids))
+    .set('earliestBlock', newEarliestBlock);
 }
 
 function updateOfferLoadDetails(offerCache, id, loadDetails) {

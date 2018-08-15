@@ -93,6 +93,7 @@ const handlers = {
   ),
 
   [DiscoverOffersEvents.Init.SUCCEEDED]: OfferCache.updateOnDiscoverOffersInitSucceeded,
+  [DiscoverOffersEvents.LoadMoreOffers.SUCCEEDED]: OfferCache.updateOnLoadMoreOffersSucceeded,
 
   [IpfsEvents.LoadOfferDetails.SUCCEEDED]: OfferCache.updateOnLoadOfferDetailsSucceeded,
   [IpfsEvents.LoadOfferDetails.FAILED]: OfferCache.updateOnLoadOfferDetailsFailed,

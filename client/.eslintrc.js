@@ -6,5 +6,6 @@ module.exports = {
   "rules": {
     "import/no-unresolved": 0,
     "import/prefer-default-export": 0,
+    "react/forbid-prop-types": 0,
   }
 };

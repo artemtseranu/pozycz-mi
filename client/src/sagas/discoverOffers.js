@@ -22,8 +22,7 @@ function* init() {
 
   const offersContract = yield select(state => Ethereum.getOffersContract(state.eth));
   const initBlockNumber = yield select(state => Ethereum.getInitBlockNumber(state.eth));
-
-  const numberOfBlocksToLoad = 3;
+  const numberOfBlocksToLoad = yield select(state => state.discoverOffers.get('numberOfBlocksToLoad'));
   const earliestBlock = Math.max(initBlockNumber - (numberOfBlocksToLoad - 1), 0);
 
   let offerCreatedEvents;
@@ -51,12 +50,57 @@ function* init() {
   yield spawn(loadOfferDetails, offerIds);
 }
 
+function* loadMoreOffers() {
+  const loadMoreOffersStatus = yield select(state => state.discoverOffers.getIn(['loadMoreOffers', 'status']));
+
+  if (loadMoreOffersStatus === 'inProgress') return;
+
+  yield put({ type: Events.LoadMoreOffers.STARTED });
+
+  const offersContract = yield select(state => state.eth.getIn(['contracts', 'offers']));
+  const earliestBlock = yield select(state => state.offerCache.get('earliestBlock'));
+
+  if (earliestBlock === 0) return;
+
+  const numberOfBlocksToLoad = yield select(state => state.discoverOffers.get('numberOfBlocksToLoad'));
+  const newEarliestBlock = Math.max((earliestBlock - 1) - (numberOfBlocksToLoad - 1), 0);
+
+  let offerCreatedEvents;
+
+  try {
+    offerCreatedEvents = yield call(
+      getEvents,
+      offersContract.OfferCreated,
+      {},
+      newEarliestBlock,
+      earliestBlock - 1,
+    );
+  } catch (error) {
+    const errorMessage = `Failed to get past OfferCreated events. ${error.message}`;
+    yield put({ type: Events.LoadMoreOffers.FAILED, errorMessage });
+    return;
+  }
+
+  yield put({ type: Events.LoadMoreOffers.SUCCEEDED, offerCreatedEvents, newEarliestBlock });
+
+  const offerIds = offerCreatedEvents.map(offerCreatedEvent => (
+    parseInt(offerCreatedEvent.args.id, 10)
+  ));
+
+  yield spawn(loadOfferDetails, offerIds);
+}
+
 function* watchMounted() {
   yield takeEvery(Events.MOUNTED, init);
+}
+
+function* watchLoadMoreOffersRequested() {
+  yield takeEvery(Events.LOAD_MORE_OFFERS_REQUESTED, loadMoreOffers);
 }
 
 export default function* () {
   yield all([
     watchMounted(),
+    watchLoadMoreOffersRequested(),
   ]);
 }
