@@ -5,6 +5,11 @@ import { push } from 'connected-react-router';
 import { pipe } from 'ramda';
 
 import { withStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
 
 import { requireEthereum } from 'Lib/page_utils';
 
@@ -13,7 +18,6 @@ import * as MyOffersState from 'Entities/my_offers_state';
 import * as OperationState from 'Entities/operation_state';
 
 import CombinedOfferList from './MyOffers/CombinedOfferList';
-// import OfferList from './MyOffers/OfferList';
 
 const styles = {
   root: {
@@ -25,16 +29,32 @@ const styles = {
 };
 
 class MyOffers extends React.Component {
+  constructor() {
+    super();
+    this.handleDeleteOfferCancel = this.handleDeleteOfferCancel.bind(this);
+    this.handleDeleteOfferConfirm = this.handleDeleteOfferConfirm.bind(this);
+  }
+
   componentDidMount() {
-    const { dispatch } = this.props; // eslint-disable-line react/prop-types
+    const { dispatch } = this.props;
 
     dispatch({ type: Events.MOUNTED });
   }
 
   handleCreateOfferClick() {
-    const { dispatch } = this.props; // eslint-disable-line react/prop-types
+    const { dispatch } = this.props;
     // TODO: Use constant
     dispatch(push('/create-offer'));
+  }
+
+  handleDeleteOfferCancel() {
+    const { dispatch } = this.props;
+    dispatch({ type: Events.DELETE_OFFER_CANCELLED });
+  }
+
+  handleDeleteOfferConfirm() {
+    const { dispatch } = this.props;
+    dispatch({ type: Events.DELETE_OFFER_CONFIRMED });
   }
 
   renderCombinedOfferList() {
@@ -62,36 +82,45 @@ class MyOffers extends React.Component {
   }
 
   render() {
-    const { classes } = this.props; // eslint-disable-line react/prop-types
-
-    // <OfferList
-    //   title="Pending offers"
-    //   keyFn={offer => Offer.getTransactionHash(offer)}
-    //   offers={pendingOffers}
-    // />
-    // <OfferList
-    //   title="Recorded offers"
-    //   keyFn={offer => Offer.getId(offer)}
-    //   offers={offers}
-    //   whenEmpty="You don't have any offers yet"
-    //   direction="column-reverse"
-    // />
+    const { classes, isDeleteOfferConfirmationOpen } = this.props;
 
     return (
       <div className={classes.root}>
         {this.renderCombinedOfferList()}
+        <Dialog
+          open={isDeleteOfferConfirmationOpen}
+          onClose={this.handleDeleteOfferCancel}
+        >
+          <DialogContent>
+            <DialogContentText>
+              Really delete offer?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button color="primary" onClick={this.handleDeleteOfferCancel}>
+              Cancel
+            </Button>
+            <Button color="secondary" onClick={this.handleDeleteOfferConfirm}>
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
 }
 
 MyOffers.propTypes = {
+  classes: PropTypes.object.isRequired,
+  dispatch: PropTypes.func.isRequired,
   init: PropTypes.instanceOf(OperationState.OperationState).isRequired,
+  isDeleteOfferConfirmationOpen: PropTypes.bool.isRequired,
 };
 
 function mapStateToProps(state) {
   return {
     init: MyOffersState.getInit(state.myOffers),
+    isDeleteOfferConfirmationOpen: MyOffersState.isDeleteOfferConfirmationOpen(state.myOffers),
   };
 }
 

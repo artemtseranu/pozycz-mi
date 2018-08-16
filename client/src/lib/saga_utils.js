@@ -40,3 +40,10 @@ export function* loadOfferDetails(offerIds) {
   const loaders = offerIds.map(offerId => call(loadSingleOfferDetails, offerId));
   yield all(loaders);
 }
+
+function selectIn(key) {
+  return selector => select(state => selector(state[key]));
+}
+
+export const selectInEthereum = selectIn('eth');
+export const selectInMyOffers = selectIn('myOffers');

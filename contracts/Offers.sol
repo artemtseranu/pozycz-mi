@@ -5,6 +5,7 @@ contract Offers {
     address owner;
     string description;
     bytes32 details;
+    bool isDeleted;
   }
 
   mapping(uint => Offer) public offers;
@@ -25,7 +26,8 @@ contract Offers {
     Offer memory offer = Offer({
       owner: owner,
       description: description,
-      details: details
+      details: details,
+      isDeleted: false
     });
 
     offersIdSeq += 1;
@@ -43,7 +45,10 @@ contract Offers {
   }
 
   function deleteOffer(uint id) public restrictedToOfferOwner(id) {
-    delete offers[id];
+    // Refund for clearing storage causes ganache-cli to fail the transaction
+    // https://github.com/trufflesuite/ganache-cli/issues/294
+    // delete offers[id];
+    offers[id].isDeleted = true;
     emit OfferDeleted({id: id});
   }
 }

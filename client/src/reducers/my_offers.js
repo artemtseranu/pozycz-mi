@@ -5,6 +5,7 @@ import { create } from 'Lib/reducer_utils';
 import {
   MyOffersState, setSuccessInit, setFailureInit, setOfferIds, addPendingOffer,
 } from 'Entities/my_offers_state';
+import * as MyOffersPage from 'Entities/my_offers_state';
 
 import * as Events from 'Events/my_offers';
 import * as Offer from 'Entities/offer';
@@ -29,6 +30,11 @@ const handlers = {
     const offer = Offer.pending(transactionHash, description, details);
     return addPendingOffer(state, offer);
   },
+
+  [Events.DELETE_OFFER_REQUESTED]: MyOffersPage.updateOnDeleteOfferRequested,
+  [Events.DELETE_OFFER_CANCELLED]: MyOffersPage.updateOnDeleteOfferCancelled,
+
+  [Events.SendDeleteOfferTx.STARTED]: MyOffersPage.updateOnSendDeleteOfferTxStarted,
 };
 
 export default create(handlers, initialState);

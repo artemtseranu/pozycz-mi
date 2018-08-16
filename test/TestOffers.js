@@ -95,11 +95,9 @@ contract("Offers", (accounts) => {
     it("deletes offer", async () => {
       await instance.deleteOffer.sendTransaction(1, {from: accounts[0]});
 
-      const [owner, description, details] = await instance.offers(1);
+      const [_owner, _description, _details, isDeleted] = await instance.offers(1);
 
-      assert.equal(owner, 0);
-      assert.equal(description, "");
-      assert.equal(details, 0);
+      assert.equal(isDeleted, true);
     });
 
     it("emits OfferDeleted event", async () => {

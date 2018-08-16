@@ -14,6 +14,8 @@ import DeleteIcon from '@material-ui/icons/Delete';
 
 import * as Offer from 'Entities/offer';
 
+import * as Events from 'Events/my_offers';
+
 import OfferThumbnail from 'Components/OfferCardThumbnail';
 import OfferDetails from 'Components/OfferCardDetails';
 
@@ -33,6 +35,7 @@ class OfferCard extends React.Component {
 
     this.showDetails = this.showDetails.bind(this);
     this.hideDetails = this.hideDetails.bind(this);
+    this.handleClickDelete = this.handleClickDelete.bind(this);
   }
 
   showDetails() {
@@ -41,6 +44,11 @@ class OfferCard extends React.Component {
 
   hideDetails() {
     this.setState(state => ({ ...state, isDetailsOpen: false }));
+  }
+
+  handleClickDelete() {
+    const { dispatch, offer } = this.props;
+    dispatch({ type: Events.DELETE_OFFER_REQUESTED, offerId: Offer.getId(offer) });
   }
 
   renderToggleDetailsButton() {
@@ -107,7 +115,7 @@ class OfferCard extends React.Component {
                   </Grid>
                   <Grid item xs={12}>
                     {this.renderToggleDetailsButton()}
-                    <Button mini onClick={this.handleClickDelete}>
+                    <Button mini color="secondary" onClick={this.handleClickDelete}>
                       <DeleteIcon />
                       Delete
                     </Button>
@@ -124,6 +132,7 @@ class OfferCard extends React.Component {
 }
 
 OfferCard.propTypes = {
+  dispatch: PropTypes.func.isRequired,
   offer: PropTypes.instanceOf(Offer.Offer).isRequired,
 };
 
