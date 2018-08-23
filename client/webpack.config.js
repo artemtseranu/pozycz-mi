@@ -18,6 +18,7 @@ module.exports = {
       Entities: path.resolve(__dirname, 'src/entities'),
       Reducers: path.resolve(__dirname, 'src/reducers'),
       Lib: path.resolve(__dirname, 'src/lib'),
+      TestSupport: path.resolve(__dirname, 'test/support'),
       ContractArtifacts: path.resolve(__dirname, '../build/contracts'),
     },
   },

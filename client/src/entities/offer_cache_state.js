@@ -1,7 +1,11 @@
-import { List, Map, Record } from 'immutable';
+import {
+  List, Map, Record, Set,
+} from 'immutable';
+
 import { partialRight, pipe } from 'ramda';
 
 import { findAndDelete } from 'Lib/list_utils';
+import { parseEvents } from 'Lib/offer_cache_utils';
 
 import * as Offer from './offer';
 import * as OfferDetails from './offer_details';
@@ -13,6 +17,7 @@ export const OfferCacheState = Record({ // eslint-disable-line import/prefer-def
 
   offers: Map(),
   offerIds: List(),
+  deletedOfferIds: Set(),
   myOfferIds: List(),
   pendingOffers: List(),
 
@@ -110,19 +115,31 @@ export function markOfferDetailsLoaddingFailed(state, id, errorMessage) {
     .setIn(['offers', id, 'details', 'errorMessage'], errorMessage);
 }
 
-export function updateOnDiscoverOffersInitSucceeded(offerCache, event) {
-  const { offerCreatedEvents, earliestBlock } = event;
-
-  const [newOffers, ids] = offerCreatedEvents.reduce(([map, list], offerCreatedEvent) => {
-    const offer = Offer.fromOfferCreatedEvent(offerCreatedEvent);
-    const id = Offer.getId(offer);
-    return [map.set(id, offer), list.push(id)];
-  }, [Map(), List()]);
+export function updateOnMyOffersInitSucceeded(offerCache, event) {
+  const parsedEvents = parseEvents({
+    offerCreatedEvents: event.offerCreatedEvents,
+    offerDeletedEvents: event.offerDeletedEvents,
+    deletedOfferIds: offerCache.get('deletedOfferIds'),
+  });
 
   return offerCache
-    .update('offers', offers => newOffers.merge(offers))
-    .update('offerIds', list => list.unshift(...ids))
-    .set('earliestBlock', earliestBlock);
+    .update('offers', map => map.merge(parsedEvents.get('offers')))
+    .update('myOfferIds', list => list.unshift(...parsedEvents.get('offerIds')))
+    .set('deletedOfferIds', parsedEvents.get('deletedOfferIds'));
+}
+
+export function updateOnDiscoverOffersInitSucceeded(offerCache, event) {
+  const parsedEvents = parseEvents({
+    offerCreatedEvents: event.offerCreatedEvents,
+    offerDeletedEvents: event.offerDeletedEvents,
+    deletedOfferIds: offerCache.get('deletedOfferIds'),
+  });
+
+  return offerCache
+    .update('offers', map => map.merge(parsedEvents.get('offers')))
+    .update('offerIds', list => list.unshift(...parsedEvents.get('offerIds')))
+    .set('deletedOfferIds', parsedEvents.get('deletedOfferIds'))
+    .set('earliestBlock', event.earliestBlock);
 }
 
 export function updateOnLoadMoreOffersSucceeded(offerCache, event) {

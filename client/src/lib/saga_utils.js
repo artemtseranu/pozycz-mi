@@ -17,6 +17,8 @@ import * as IpfsEvents from 'Events/ipfs';
 export function* loadSingleOfferDetails(id) {
   const offer = yield select(state => OfferCache.getOffer(state.offerCache, id));
 
+  if (!offer) return;
+
   // TODO detailsIsPending -> isDetailsPending
   if (!Offer.detailsIsPending(offer)) return;
 

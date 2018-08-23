@@ -31,7 +31,21 @@ function* init() {
     return;
   }
 
-  yield put({ type: Events.Init.SUCCEEDED, offerCreatedEvents });
+  let offerDeletedEvents;
+
+  try {
+    offerDeletedEvents = yield call(
+      getEvents,
+      offersContract.OfferDeleted,
+      { owner: currentAccount() },
+    );
+  } catch (error) {
+    const errorMessage = `Failed to get past OfferDeleted events. ${error.message}`;
+    yield put({ type: Events.Init.FAILED, errorMessage });
+    return;
+  }
+
+  yield put({ type: Events.Init.SUCCEEDED, offerCreatedEvents, offerDeletedEvents });
 
   const offerIds = offerCreatedEvents.map(offerCreatedEvent => (
     parseInt(offerCreatedEvent.args.id, 10)

@@ -1,6 +1,3 @@
-import { List, Map } from 'immutable';
-import { partialRight, pipe } from 'ramda';
-
 import { create } from 'Lib/reducer_utils';
 
 import * as Offer from 'Entities/offer';
@@ -9,8 +6,6 @@ import * as OfferAttributes from 'Entities/offer_attributes';
 import {
   OfferCacheState,
   addCreatedOffers,
-  addOffers,
-  addMyOfferIds,
   addPendingOffer,
   markOfferDetailsLoaddingInProgress,
   markOfferDetailsLoaddingLoaded,
@@ -45,21 +40,7 @@ const handlers = {
     state, offerCreatedEventsToOffers(event.offerCreatedEvents),
   ),
 
-  [MyOffersEvents.Init.SUCCEEDED]: (state, event) => {
-    const [newOffers, newMyOfferIds] = event.offerCreatedEvents.reduce(
-      ([map, list], ethereumEvent) => {
-        const offer = Offer.fromEthereumEvent(ethereumEvent);
-        const id = Offer.getId(offer);
-        return [map.set(id, offer), list.push(id)];
-      },
-      [Map(), List()],
-    );
-
-    return pipe(
-      partialRight(addOffers, [newOffers]),
-      partialRight(addMyOfferIds, [newMyOfferIds]),
-    )(state);
-  },
+  [MyOffersEvents.Init.SUCCEEDED]: OfferCache.updateOnMyOffersInitSucceeded,
 
   [CreateOfferEvents.SendCreateOfferTransaction.SUCCEEDED]: (state, event) => {
     const { transactionHash, description, details } = event;
