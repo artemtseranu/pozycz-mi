@@ -60,6 +60,7 @@ const handlers = {
   //   return addNewMyOffer(state, transactionHash, attributes);
   // },
   [EthereumEvents.OFFER_CREATED]: OfferCache.updateOnOfferCreated,
+  [EthereumEvents.OFFER_DELETED]: OfferCache.updateOnOfferDeleted,
 
   [MyOffersEvents.LoadOfferDetails.STARTED]: (state, { id }) => (
     markOfferDetailsLoaddingInProgress(state, id)

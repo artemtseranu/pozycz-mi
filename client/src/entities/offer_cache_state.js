@@ -143,18 +143,17 @@ export function updateOnDiscoverOffersInitSucceeded(offerCache, event) {
 }
 
 export function updateOnLoadMoreOffersSucceeded(offerCache, event) {
-  const { offerCreatedEvents, newEarliestBlock } = event;
-
-  const [newOffers, ids] = offerCreatedEvents.reduce(([map, list], offerCreatedEvent) => {
-    const offer = Offer.fromOfferCreatedEvent(offerCreatedEvent);
-    const id = Offer.getId(offer);
-    return [map.set(id, offer), list.push(id)];
-  }, [Map(), List()]);
+  const parsedEvents = parseEvents({
+    offerCreatedEvents: event.offerCreatedEvents,
+    offerDeletedEvents: event.offerDeletedEvents,
+    deletedOfferIds: offerCache.get('deletedOfferIds'),
+  });
 
   return offerCache
-    .update('offers', offers => newOffers.merge(offers))
-    .update('offerIds', list => list.unshift(...ids))
-    .set('earliestBlock', newEarliestBlock);
+    .update('offers', map => map.merge(parsedEvents.get('offers')))
+    .update('offerIds', list => list.unshift(...parsedEvents.get('offerIds')))
+    .set('deletedOfferIds', parsedEvents.get('deletedOfferIds'))
+    .set('earliestBlock', event.newEarliestBlock);
 }
 
 function updateOfferLoadDetails(offerCache, id, loadDetails) {
@@ -198,6 +197,31 @@ export function updateOnOfferCreated(offerCache, event) {
 
   if (event.isOwned) {
     updatedOfferCache = updatedOfferCache.update('myOfferIds', list => list.push(id));
+  }
+
+  return updatedOfferCache;
+}
+
+export function updateOnOfferDeleted(offerCache, { offerDeletedEvent }) {
+  const id = parseInt(offerDeletedEvent.args.id, 10);
+
+  let updatedOfferCache = offerCache;
+
+  if (offerCache.get('offers').has(id)) {
+    updatedOfferCache = updatedOfferCache.deleteIn(['offers', id]);
+    const offerIdIdx = offerCache.get('offerIds').indexOf(id);
+
+    if (offerIdIdx > 0) {
+      updatedOfferCache = updatedOfferCache.deleteIn(['offerIds', offerIdIdx]);
+    }
+
+    const myOfferIdIdx = offerCache.get('myOfferIds').indexOf(id);
+
+    if (myOfferIdIdx > 0) {
+      updatedOfferCache = updatedOfferCache.deleteIn(['myOfferIds', myOfferIdIdx]);
+    }
+  } else {
+    updatedOfferCache = updatedOfferCache.update('deletedOfferIds', set => set.add(id));
   }
 
   return updatedOfferCache;

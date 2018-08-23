@@ -43,9 +43,10 @@ function* init({ dispatch }) {
     return;
   }
 
-  const offerCreated = offersContract.OfferCreated();
-
   const account = window.web3.eth.accounts[0];
+
+  const offerCreated = offersContract.OfferCreated();
+  const offerDeleted = offersContract.OfferDeleted();
 
   yield put({
     type: Events.Init.SUCCEEDED,
@@ -55,6 +56,7 @@ function* init({ dispatch }) {
     initBlockNumber,
     watchers: {
       offerCreated,
+      offerDeleted,
     },
   });
 
@@ -67,12 +69,25 @@ function* init({ dispatch }) {
       });
     }
   });
+
+  offerDeleted.watch((error, event) => {
+    if (!error && event.blockNumber > initBlockNumber) {
+      dispatch({
+        type: Events.OFFER_DELETED_EVENT_RECEIVED,
+        offerDeletedEvent: event,
+      });
+    }
+  });
 }
 
 function* handleOfferCreatedEventReceived({ offerCreatedEvent, isOwned }) {
   yield put({ type: Events.OFFER_CREATED, offerCreatedEvent, isOwned });
   const id = parseInt(offerCreatedEvent.args.id, 10);
   yield spawn(loadSingleOfferDetails, id);
+}
+
+function* handleOfferDeletedEventReceived({ offerDeletedEvent }) {
+  yield put({ type: Events.OFFER_DELETED, offerDeletedEvent });
 }
 
 function* watchRequired() {
@@ -83,9 +98,14 @@ function* watchOfferCreatedEventReceived() {
   yield takeEvery(Events.OFFER_CREATED_EVENT_RECEIVED, handleOfferCreatedEventReceived);
 }
 
+function* watchOfferDeletedEventReceived() {
+  yield takeEvery(Events.OFFER_DELETED_EVENT_RECEIVED, handleOfferDeletedEventReceived);
+}
+
 export default function* () {
   yield all([
     watchRequired(),
     watchOfferCreatedEventReceived(),
+    watchOfferDeletedEventReceived(),
   ]);
 }

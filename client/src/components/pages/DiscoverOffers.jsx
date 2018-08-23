@@ -24,7 +24,7 @@ import OfferCardList from 'Components/OfferCardList';
 import OfferCard from './DiscoverOffers/OfferCard';
 
 const styles = theme => ({
-  loadMoreControls: {
+  earliestBlock: {
     marginTop: theme.spacing.unit * 2,
   },
   numberOfBlocksToLoadSelect: {
@@ -112,6 +112,7 @@ class DiscoverOffers extends React.Component {
       classes,
       initStatus,
       initErrorMessage,
+      earliestBlock,
       offers,
     } = this.props;
 
@@ -133,7 +134,13 @@ class DiscoverOffers extends React.Component {
               direction="column-reverse"
               whenEmpty="No offers found"
             />
-            <div className={classes.loadMoreControls}>
+            <div className={classes.earliestBlock}>
+              <Typography>
+                Earliest loaded block number:&nbsp;
+                {earliestBlock}
+              </Typography>
+            </div>
+            <div>
               {this.renderLoadMoreControls()}
             </div>
           </React.Fragment>

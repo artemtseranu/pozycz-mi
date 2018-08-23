@@ -3,7 +3,6 @@ import { List, Map } from 'immutable';
 import * as Offer from 'Entities/offer';
 
 export function parseEvents({ offerCreatedEvents, offerDeletedEvents, deletedOfferIds }) {
-  console.log(offerDeletedEvents);
   let updatedDeletedOfferIds = deletedOfferIds;
 
   offerDeletedEvents.forEach((offerDeletedEvent) => {

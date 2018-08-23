@@ -102,7 +102,28 @@ function* loadMoreOffers() {
     return;
   }
 
-  yield put({ type: Events.LoadMoreOffers.SUCCEEDED, offerCreatedEvents, newEarliestBlock });
+  let offerDeletedEvents;
+
+  try {
+    offerDeletedEvents = yield call(
+      getEvents,
+      offersContract.OfferDeleted,
+      {},
+      newEarliestBlock,
+      earliestBlock - 1,
+    );
+  } catch (error) {
+    const errorMessage = `Failed to get past OfferDeleted events. ${error.message}`;
+    yield put({ type: Events.LoadMoreOffers.FAILED, errorMessage });
+    return;
+  }
+
+  yield put({
+    type: Events.LoadMoreOffers.SUCCEEDED,
+    offerCreatedEvents,
+    offerDeletedEvents,
+    newEarliestBlock,
+  });
 
   const offerIds = offerCreatedEvents.map(offerCreatedEvent => (
     parseInt(offerCreatedEvent.args.id, 10)
