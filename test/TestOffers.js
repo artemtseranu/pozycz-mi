@@ -36,9 +36,90 @@ contract("Offers", (accounts) => {
         expectedEvents,
         instance,
         "createOffer",
-        "Offer 2",
-        "0x2",
-        {from: accounts[0]}
+        ["Offer 2", "0x2", {from: accounts[0]}],
+      );
+    });
+  });
+
+  contract('#lockOffer', () => {
+    before(async () => {
+      await instance.createOffer.sendTransaction('Offer 1', '0x1', {from: accounts[0]});
+      await instance.createOffer.sendTransaction('Offer 2', '0x2', {from: accounts[1]});
+    });
+
+    it('marks offer as locked', async () => {
+      await instance.lockOffer.sendTransaction(1, { from: accounts[0] });
+      const isLocked = await instance.isOfferLocked(1);
+      assert(isLocked);
+    });
+
+    it('is not allowed for locked offers', async () => {
+      await assertTransaction.isReverted(
+        instance.lockOffer,
+        [1, { from: accounts[0] }],
+        'Not allowed for locked offers',
+      );
+    });
+
+    it("is restricted to the offer's owner", async () => {
+      await assertTransaction.isReverted(
+        instance.lockOffer,
+        [2, { from: accounts[0] }],
+        "Restricted to offer's owner",
+      );
+    });
+
+    it('emits OfferLocked event', async () => {
+      await assertTransaction.emitsEvents(
+        [{ event: 'OfferLocked', args: { id: 2 } }],
+        instance,
+        'lockOffer',
+        [2, { from: accounts[1] }],
+      );
+    });
+  });
+
+  contract('#unlockOffer', () => {
+    before(async () => {
+      await instance.createOffer.sendTransaction('Offer 1', '0x1', { from: accounts[0] });
+      await instance.lockOffer.sendTransaction(1, { from: accounts[0] });
+      await instance.createOffer.sendTransaction('Offer 2', '0x2', { from: accounts[1] });
+      await instance.lockOffer.sendTransaction(2, { from: accounts[1] });
+    });
+
+    it('marks offer as unlocked', async () => {
+      await instance.unlockOffer.sendTransaction(1, { from: accounts[0] });
+      const isLocked = await instance.isOfferLocked(1);
+      assert(!isLocked);
+    });
+
+    it("increments offer's nonce", async () => {
+      const nonce = await instance.getNonce(1);
+      assert.equal(nonce, 1);
+    });
+
+    it("is not allowed for unlocked offers", async () => {
+      await assertTransaction.isReverted(
+        instance.unlockOffer,
+        [1, {from: accounts[0]}],
+        "Not allowed for unlocked offers"
+      );
+    });
+
+    it("is restricted to offer's owner", async () => {
+      await assertTransaction.isReverted(
+        instance.unlockOffer,
+        [2, {from: accounts[0]}],
+        "Restricted to offer's owner"
+      );
+    });
+
+    it("emits OfferUnlocked event", async () => {
+      await assertTransaction.emitsEvents(
+        [{event: "OfferUnlocked", args: {id: 2}}],
+        instance,
+        "unlockOffer",
+        [2, {from: accounts[1]}]
       );
     });
   });
@@ -46,6 +127,8 @@ contract("Offers", (accounts) => {
   contract("#updateOffer", () => {
     before(async () => {
       await instance.createOffer.sendTransaction("Offer 1", "0x1", {from: accounts[0]});
+      await instance.lockOffer.sendTransaction(1, {from: accounts[0]});
+      await instance.createOffer.sendTransaction("Offer 2", "0x2", {from: accounts[0]});
     });
 
     it("updates offer", async () => {
@@ -73,15 +156,24 @@ contract("Offers", (accounts) => {
         expectedEvents,
         instance,
         "updateOffer",
-        1,
-        "Offer 1 - edited again",
-        "0x1b",
-        {from: accounts[0]}
+        [1, "Offer 1 - edited again", "0x1b", {from: accounts[0]}],
       )
     });
 
     it("is restricted to the offer's owner", async () => {
-      await assertTransaction.isReverted(instance.updateOffer, 1, "Offer 1 - edited yet again", "0x1c", {from: accounts[1]});
+      await assertTransaction.isReverted(
+        instance.updateOffer,
+        [1, "Offer 1 - edited yet again", "0x1c", {from: accounts[1]}],
+        "Restricted to offer's owner",
+      );
+    });
+
+    it("is not allowed for unlocked offers", async () => {
+      await assertTransaction.isReverted(
+        instance.updateOffer,
+        [2, "Offer 2 - edited", "0x2a", {from: accounts[0]}],
+        "Not allowed for unlocked offers"
+      );
     });
   });
 
@@ -92,10 +184,10 @@ contract("Offers", (accounts) => {
       await instance.createOffer.sendTransaction("Offer 3", "0x2", {from: accounts[0]});
     });
 
-    it("deletes offer", async () => {
+    it("marks offer as deleted", async () => {
       await instance.deleteOffer.sendTransaction(1, {from: accounts[0]});
 
-      const [_owner, _description, _details, isDeleted] = await instance.offers(1);
+      const isDeleted = await instance.isOfferDeleted(1);
 
       assert.equal(isDeleted, true);
     });
@@ -114,13 +206,16 @@ contract("Offers", (accounts) => {
         expectedEvents,
         instance,
         "deleteOffer",
-        2,
-        {from: accounts[0]}
+        [2, {from: accounts[0]}],
       );
     });
 
     it("is restricted to the offer's owner", async () => {
-      await assertTransaction.isReverted(instance.deleteOffer, 3, {from: accounts[1]});
+      await assertTransaction.isReverted(
+        instance.deleteOffer,
+        [3, {from: accounts[1]}],
+        "Restricted to offer's owner",
+      );
     });
   });
 });

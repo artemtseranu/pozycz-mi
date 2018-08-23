@@ -1,4 +1,4 @@
-async function isReverted(contractFunction, ...args) {
+async function isReverted(contractFunction, args, reason) {
   let errorMessage;
 
   try {
@@ -7,9 +7,9 @@ async function isReverted(contractFunction, ...args) {
     errorMessage = error.message;
   }
 
-  const expectedErrorMessage = "VM Exception while processing transaction: revert";
+  const expectedErrorMessage = "VM Exception while processing transaction: revert " + reason;
 
-  assert.equal(errorMessage, expectedErrorMessage, "Expected transaction to fail with 'revert' error message");
+  assert.equal(errorMessage, expectedErrorMessage, "Expected transaction to fail with 'revert " + reason + "' error message");
 }
 
 function transformEvent(event) {
@@ -24,7 +24,7 @@ function transformEvent(event) {
   return result;
 }
 
-async function emitsEvents(expectedEvents, contractInstance, contractFunctionKey, ...args) {
+async function emitsEvents(expectedEvents, contractInstance, contractFunctionKey, args) {
   const watcher = contractInstance.allEvents();
 
   const transactionHash = await contractInstance[contractFunctionKey].sendTransaction(...args);
@@ -38,5 +38,5 @@ async function emitsEvents(expectedEvents, contractInstance, contractFunctionKey
 
 module.exports = {
   isReverted,
-  emitsEvents
+  emitsEvents,
 };
