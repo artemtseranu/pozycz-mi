@@ -90,7 +90,7 @@ contract Offers {
     return offers[id].isDeleted;
   }
 
-  function getNonce(uint id) public view returns(uint) {
+  function getNonce(uint id) public view returns(uint32) {
     return offers[id].nonce;
   }
 }

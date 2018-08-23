@@ -12,14 +12,18 @@ async function isReverted(contractFunction, args, reason) {
   assert.equal(errorMessage, expectedErrorMessage, "Expected transaction to fail with 'revert " + reason + "' error message");
 }
 
+const INT_ARGS = ['id', 'offerId', 'guarantee', 'payPerHour', 'minHours', 'maxHours', 'hoursToConfirm'];
+
 function transformEvent(event) {
   let result = {};
   result.event = event.event;
   result.args = event.args;
 
-  if (event.args.id) {
-    result.args.id = parseInt(event.args.id, 10);
-  }
+  INT_ARGS.forEach((intArg) => {
+    if (event.args[intArg]) {
+      result.args[intArg] = parseInt(event.args[intArg], 10);
+    }
+  });
 
   return result;
 }
