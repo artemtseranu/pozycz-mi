@@ -93,4 +93,8 @@ contract Offers {
   function getNonce(uint id) public view returns(uint32) {
     return offers[id].nonce;
   }
+
+  function getOfferOwner(uint id) public view returns(address) {
+    return offers[id].owner;
+  }
 }
