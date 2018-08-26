@@ -1,11 +1,17 @@
 pragma solidity ^0.4.23;
 
+import "zeppelin/contracts/token/SafeERC20.sol";
+
 import "./ContractRegistry.sol";
 import "./Offers.sol";
 import "./Clock.sol";
 import "./OfferLocks.sol";
+import "./SharingAgreement.sol";
+import "./SharingToken.sol";
 
 contract BorrowRequests {
+  using SafeERC20 for SharingToken;
+
   struct Request {
     uint offerId;
     address borrower;
@@ -28,6 +34,8 @@ contract BorrowRequests {
 
   mapping(uint => Approval) public approvals;
 
+  mapping(uint => address) public sharingContracts;
+
   event BorrowRequestCreated(
     uint id,
     uint indexed offerId,
@@ -41,6 +49,8 @@ contract BorrowRequests {
   );
 
   event BorrowRequestApproved(uint indexed offerId, uint indexed requestId, uint expiresAt);
+
+  event BorrowRequestConfirmed(uint indexed offerId, address sharingContract, uint confirmedAt);
 
   constructor(address contractRegistryAddress) public {
     contractRegistry = ContractRegistry(contractRegistryAddress);
@@ -112,7 +122,7 @@ contract BorrowRequests {
       require(currentTime > prevApproval.expiresAt, "Not allowed until previous approve expires");
     }
 
-    uint expiresAt = currentTime + (request.hoursToConfirm * 3600000);
+    uint expiresAt = currentTime + (uint(request.hoursToConfirm) * 3600000);
 
     Approval memory approval = Approval({requestId: id, expiresAt: expiresAt});
 
@@ -122,6 +132,47 @@ contract BorrowRequests {
       offerId: request.offerId,
       requestId: id,
       expiresAt: expiresAt
+    });
+  }
+
+  function confirmRequest(uint offerId) public payable {
+    Approval storage approval = approvals[offerId];
+
+    require(approval.requestId > 0, "Request must be approved");
+
+    Clock clock = Clock(contractRegistry.getContractAddress("clock"));
+    uint currentTime = clock.getTime();
+
+    require(currentTime < approval.expiresAt, "Approval has expired");
+
+    Request storage borrowRequest = requests[approval.requestId];
+
+    require(msg.sender == borrowRequest.borrower, "Sender must be approved request's owner");
+    require(msg.value >= borrowRequest.guarantee, "Not enough value sent for the guarantee");
+
+    SharingToken sharingToken = SharingToken(contractRegistry.getContractAddress("sharingToken"));
+
+    uint neededSharingTokens = borrowRequest.payPerHour * borrowRequest.maxHours;
+
+    require(
+      sharingToken.balanceOf(msg.sender) > neededSharingTokens,
+      "Sender doesn't have enough sharing tokens"
+    );
+
+    OfferLocks offerLocks = OfferLocks(contractRegistry.getContractAddress("offerLocks"));
+
+    offerLocks.lockOffer(offerId);
+
+    SharingAgreement sharingAgreement = new SharingAgreement(contractRegistry, offerId, approval.requestId);
+
+    sharingContracts[offerId] = sharingAgreement;
+    address(sharingAgreement).transfer(msg.value);
+    sharingToken.safeTransferFrom(msg.sender, address(sharingAgreement), neededSharingTokens);
+
+    emit BorrowRequestConfirmed({
+      offerId: offerId,
+      sharingContract: sharingAgreement,
+      confirmedAt: currentTime
     });
   }
 }

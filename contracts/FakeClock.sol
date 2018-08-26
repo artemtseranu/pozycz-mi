@@ -1,13 +1,13 @@
 pragma solidity ^0.4.23;
 
 contract FakeClock {
-  uint time;
+  uint64 time;
 
-  function getTime() public view returns(uint) {
+  function getTime() public view returns(uint64) {
     return time;
   }
 
-  function setTime(uint newTime) public {
+  function setTime(uint64 newTime) public {
     time = newTime;
   }
 }

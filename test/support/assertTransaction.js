@@ -2,41 +2,39 @@ async function isReverted(contractFunction, args, reason) {
   let errorMessage;
 
   try {
-    await contractFunction.sendTransaction(...args);
+    await contractFunction(...args);
   } catch (error) {
     errorMessage = error.message;
   }
 
-  const expectedErrorMessage = "VM Exception while processing transaction: revert " + reason;
+  let expectedErrorMessage;
+
+  if (reason) {
+    expectedErrorMessage = "VM Exception while processing transaction: revert " + reason;
+  } else {
+    expectedErrorMessage = "VM Exception while processing transaction: revert";
+  }
 
   assert.equal(errorMessage, expectedErrorMessage, "Expected transaction to fail with 'revert " + reason + "' error message");
 }
 
-const INT_ARGS = [
-  'id',
-  'offerId',
-  'guarantee',
-  'payPerHour',
-  'minHours',
-  'maxHours',
-  'hoursToConfirm',
-  'offerNonce',
-  'requestId',
-  'expiresAt'
-];
+function matchEvent(actualEvent, expectedEvent) {
+  Object.keys(actualEvent.args).forEach((arg) => {
+    if (typeof expectedEvent.args[arg] === "function") {
+      const check = expectedEvent.args[arg](actualEvent.args[arg]);
 
-function transformEvent(event) {
-  let result = {};
-  result.event = event.event;
-  result.args = event.args;
-
-  INT_ARGS.forEach((intArg) => {
-    if (event.args[intArg]) {
-      result.args[intArg] = parseInt(event.args[intArg], 10);
+      assert(
+        check,
+        `Actual event argument doesn't match expected. Actual arguments: ${JSON.stringify(actualEvent.args)}, Not matching argument: ${arg}`
+      );
+    } else {
+      assert.equal(
+        actualEvent.args[arg],
+        expectedEvent.args[arg],
+        `Actual event argument doesn't match expected. Actual arguments: ${JSON.stringify(actualEvent.args)}, Not matching argument: ${arg}`
+      );
     }
   });
-
-  return result;
 }
 
 async function emitsEvents(expectedEvents, contractInstance, contractFunctionKey, args) {
@@ -44,11 +42,16 @@ async function emitsEvents(expectedEvents, contractInstance, contractFunctionKey
 
   const transactionHash = await contractInstance[contractFunctionKey].sendTransaction(...args);
 
-  const actualEvents = watcher.get()
-    .filter(event => event.transactionHash === transactionHash)
-    .map(transformEvent);
+  const actualEvents = watcher.get().filter(event => event.transactionHash === transactionHash);
+  const actualEventTypes = actualEvents.map(event => event.event);
+  const expectedEventTypes = expectedEvents.map(event => event.event);
 
-  assert.deepEqual(expectedEvents, actualEvents, "Events emitted during transaction don't match expected");
+  assert.deepEqual(expectedEventTypes, actualEventTypes, "Events emitted during transaction don't match expected");
+
+  actualEvents.forEach((actualEvent, idx) => {
+    const expectedEvent = expectedEvents[idx];
+    matchEvent(actualEvent, expectedEvent);
+  });
 }
 
 module.exports = {
