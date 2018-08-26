@@ -85,5 +85,29 @@ contract SharingAgreement {
     selfdestruct(borrower);
   }
 
+  function claimRewardAndGuarantee() public {
+    require(!returnConfirmed, "Return has been confirmed");
+
+    BorrowRequests borrowRequests = BorrowRequests(contractRegistry.getContractAddress("borrowRequests"));
+    Clock clock = Clock(contractRegistry.getContractAddress("clock"));
+
+    require(
+      uint(clock.getTime()) > uint(createdAt) + uint(borrowRequests.getRequestMaxHours(borrowRequestId)) * 60 * 60 * 1000,
+      "maxHours haven't passed yet"
+    );
+
+    Offers offers = Offers(contractRegistry.getContractAddress("offers"));
+    address offerOwner = offers.getOfferOwner(offerId);
+
+    require(msg.sender == offerOwner, "Sender must be offer's owner");
+
+    SharingToken sharingToken = SharingToken(contractRegistry.getContractAddress("sharingToken"));
+    sharingToken.transfer(offerOwner, sharingToken.balanceOf(this));
+
+    borrowRequests.releaseOffer(offerId);
+
+    selfdestruct(offerOwner);
+  }
+
   function() internal payable {}
 }

@@ -251,11 +251,16 @@ contract("SharingAgreement", (accounts) => {
 
         await sharingAgreement.withdrawRefundAndGuarantee({from: accounts[1]});
 
-        assert(await web3.eth.getBalance(accounts[1]) > prevEthBalance + 19 * (10 ** 18)); // accounting for gas cost
+        // accounting for gas cost
+        assert(
+          parseInt(await web3.eth.getBalance(accounts[1])) > parseInt(prevEthBalance) + 19 * (10 ** 18),
+          "borrower's ether balance is incorrect"
+        );
 
         assert.equal(
           await sharingToken.balanceOf(accounts[1]),
-          parseInt(prevSharingTokenBalance) + (2160 * 5) - (720 * 5)
+          parseInt(prevSharingTokenBalance) + (2160 * 5) - (720 * 5),
+          "borrower's sharing token balance is incorrect"
         );
       });
     });
@@ -305,6 +310,161 @@ contract("SharingAgreement", (accounts) => {
           sharingAgreement.withdrawRefundAndGuarantee,
           [{from: accounts[3]}],
           "Sender must be offer's borrower"
+        );
+      });
+    });
+  });
+
+  contract("claimRewardAndGuarantee", () => {
+    contract("when sender is offer's owner, and maxHours have passed", () => {
+      let sharingAgreement;
+      let approvedAt = 1535309854108
+      let createdAt = approvedAt + 3 * 60 * 60 * 1000;
+
+      before(async () => {
+        await sharingToken.transfer(accounts[1], 1000000);
+        await sharingToken.approve(borrowRequests.address, 1000000, {from: accounts[1]});
+
+        await offers.createOffer("Offer1", "0x1", {from: accounts[2]});
+        await borrowRequests.create(1, 20 * (10 ** 18), 5, 720, 2160, 6, {from: accounts[1]});
+
+        await fakeClock.setTime(approvedAt);
+        await borrowRequests.approve(1, {from: accounts[2]});
+
+        await fakeClock.setTime(createdAt);
+        await borrowRequests.confirmRequest(1, {from: accounts[1], value: 20 * (10 ** 18)});
+
+        await fakeClock.setTime(createdAt + 3000 * 60 * 60 * 1000);
+
+        sharingAgreement = SharingAgreement.at(await borrowRequests.sharingContracts(1));
+      });
+
+      it("transfers reward and guarantee to offer's owner", async () => {
+        const prevEthBalance = await web3.eth.getBalance(accounts[2]);
+        const prevSharingTokenBalance = await sharingToken.balanceOf(accounts[2]);
+
+        await sharingAgreement.claimRewardAndGuarantee({from: accounts[2]});
+
+        // accounting for gas cost
+        assert(
+          await parseInt(web3.eth.getBalance(accounts[2])) > parseInt(prevEthBalance),
+          "offer owner's ether balance is incorrect"
+        );
+
+        assert.equal(
+          await sharingToken.balanceOf(accounts[2]),
+          parseInt(prevSharingTokenBalance) + 2160 * 5,
+          "offer owner's sharing token balance is incorrect"
+        );
+      });
+
+      it("unlocks offer", async () => {
+        assert(!await offerLocks.isOfferLocked(1));
+      });
+
+      it("resets offer's borrow request approvement mapping", async () => {
+        assert.equal(await borrowRequests.getOfferApprovalRequestId(1), 0);
+      });
+
+      it("resets offer's sharing agreement contract mapping", async () => {
+        assert.equal(await borrowRequests.sharingContracts(1), 0);
+      });
+    });
+
+    contract("when return has been confirmed", () => {
+      let sharingAgreement;
+      let approvedAt = 1535309854108
+      let createdAt = approvedAt + 3 * 60 * 60 * 1000;
+
+      before(async () => {
+        await sharingToken.transfer(accounts[1], 1000000);
+        await sharingToken.approve(borrowRequests.address, 1000000, {from: accounts[1]});
+
+        await offers.createOffer("Offer1", "0x1", {from: accounts[2]});
+        await borrowRequests.create(1, 20 * (10 ** 18), 5, 720, 2160, 6, {from: accounts[1]});
+
+        await fakeClock.setTime(approvedAt);
+        await borrowRequests.approve(1, {from: accounts[2]});
+
+        await fakeClock.setTime(createdAt);
+        await borrowRequests.confirmRequest(1, {from: accounts[1], value: 20 * (10 ** 18)});
+
+        await fakeClock.setTime(createdAt + 3000 * 60 * 60 * 1000);
+
+        sharingAgreement = SharingAgreement.at(await borrowRequests.sharingContracts(1));
+
+        await sharingAgreement.confirmReturn({from: accounts[2]});
+      });
+
+      it("is reverted", async () => {
+        await assertTransaction.isReverted(
+          sharingAgreement.claimRewardAndGuarantee,
+          [{from: accounts[2]}],
+          "Return has been confirmed"
+        );
+      });
+    });
+
+    contract("when max hours haven't passed yet", () => {
+      let sharingAgreement;
+      let approvedAt = 1535309854108
+      let createdAt = approvedAt + 3 * 60 * 60 * 1000;
+
+      before(async () => {
+        await sharingToken.transfer(accounts[1], 1000000);
+        await sharingToken.approve(borrowRequests.address, 1000000, {from: accounts[1]});
+
+        await offers.createOffer("Offer1", "0x1", {from: accounts[2]});
+        await borrowRequests.create(1, 20 * (10 ** 18), 5, 720, 2160, 6, {from: accounts[1]});
+
+        await fakeClock.setTime(approvedAt);
+        await borrowRequests.approve(1, {from: accounts[2]});
+
+        await fakeClock.setTime(createdAt);
+        await borrowRequests.confirmRequest(1, {from: accounts[1], value: 20 * (10 ** 18)});
+
+        await fakeClock.setTime(createdAt + 2000 * 60 * 60 * 1000);
+
+        sharingAgreement = SharingAgreement.at(await borrowRequests.sharingContracts(1));
+      });
+
+      it("is reverted", async () => {
+        await assertTransaction.isReverted(
+          sharingAgreement.claimRewardAndGuarantee,
+          [{from: accounts[2]}],
+          "maxHours haven't passed yet"
+        );
+      });
+    });
+
+    contract("when sender isn't offer's owner", () => {
+      let sharingAgreement;
+      let approvedAt = 1535309854108
+      let createdAt = approvedAt + 3 * 60 * 60 * 1000;
+
+      before(async () => {
+        await sharingToken.transfer(accounts[1], 1000000);
+        await sharingToken.approve(borrowRequests.address, 1000000, {from: accounts[1]});
+
+        await offers.createOffer("Offer1", "0x1", {from: accounts[2]});
+        await borrowRequests.create(1, 20 * (10 ** 18), 5, 720, 2160, 6, {from: accounts[1]});
+
+        await fakeClock.setTime(approvedAt);
+        await borrowRequests.approve(1, {from: accounts[2]});
+
+        await fakeClock.setTime(createdAt);
+        await borrowRequests.confirmRequest(1, {from: accounts[1], value: 20 * (10 ** 18)});
+
+        await fakeClock.setTime(createdAt + 3000 * 60 * 60 * 1000);
+
+        sharingAgreement = SharingAgreement.at(await borrowRequests.sharingContracts(1));
+      });
+
+      it("is reverted", async () => {
+        await assertTransaction.isReverted(
+          sharingAgreement.claimRewardAndGuarantee,
+          [{from: accounts[4]}],
+          "Sender must be offer's owner"
         );
       });
     });
