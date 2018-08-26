@@ -1,16 +1,28 @@
 const SharingAgreement = artifacts.require("SharingAgreement");
 const ContractRegistry = artifacts.require("ContractRegistry");
 const FakeClock = artifacts.require("FakeClock");
+const Offers = artifacts.require("Offers");
+const BorrowRequests = artifacts.require("BorrowRequests");
+const SharingToken = artifacts.require("SharingToken");
+const OfferLocks = artifacts.require("OfferLocks");
 
 const assertTransaction = require("./support/assertTransaction");
 
 contract("SharingAgreement", (accounts) => {
   let contractRegistry;
   let fakeClock;
+  let offers;
+  let borrowRequests;
+  let sharingToken;
+  let offerLocks;
 
   before(async () => {
     contractRegistry = await ContractRegistry.deployed();
     fakeClock = await FakeClock.deployed();
+    offers = await Offers.deployed();
+    borrowRequests = await BorrowRequests.deployed();
+    sharingToken = await SharingToken.deployed();
+    offerLocks = await OfferLocks.deployed();
   });
 
   contract("constructor", () => {
@@ -42,6 +54,175 @@ contract("SharingAgreement", (accounts) => {
           SharingAgreement.new,
           [ContractRegistry.address, 1, 2, {from: accounts[0]}],
           "Sender must be BorrowRequests contract account"
+        );
+      });
+    });
+  });
+
+  contract("confirmReturn", () => {
+    contract("when sender is offer's owner, and when minHours have passed", () => {
+      let approvedAt = 1535297540453;
+      let confirmedAt = approvedAt + 3 * 60 * 60 * 1000;
+      let sharingAgreement;
+
+      before(async () => {
+        await sharingToken.transfer(accounts[1], 1000000);
+        await sharingToken.approve(borrowRequests.address, 1000000, {from: accounts[1]});
+
+        await offers.createOffer("Offer1", "0x1", {from: accounts[2]});
+        await borrowRequests.create(1, 200, 5, 720, 2160, 6, {from: accounts[1]});
+        await fakeClock.setTime(approvedAt);
+        await borrowRequests.approve(1, {from: accounts[2]});
+        await fakeClock.setTime(confirmedAt);
+        await borrowRequests.confirmRequest(1, {from: accounts[1], value: 200});
+
+        await fakeClock.setTime(confirmedAt + 10 * 60 * 60 * 1000);
+      });
+
+      it("sets returnConfirmed flag", async () => {
+        sharingAgreement = SharingAgreement.at(await borrowRequests.sharingContracts(1));
+
+        await sharingAgreement.confirmReturn({from: accounts[2]});
+
+        assert(await sharingAgreement.returnConfirmed());
+      });
+
+      it("transfers sharingTokens equal to minHours * tokensPerHour to offer's owner", async () => {
+        assert.equal(await sharingToken.balanceOf(accounts[2]), 5 * 720);
+      });
+
+      it("sets borrowerRefund", async () => {
+        assert.equal(await sharingAgreement.borrowerRefund(), 2160 * 5 - 720 * 5);
+      });
+
+      it("unlocks offer", async () => {
+        assert(!await offerLocks.isOfferLocked(1));
+      });
+
+      it("resets offer's borrow request approvement mapping", async () => {
+        assert.equal(await borrowRequests.getOfferApprovalRequestId(1), 0);
+      });
+
+      it("resets offer's sharing agreement contract mapping", async () => {
+        assert.equal(await borrowRequests.sharingContracts(1), 0);
+      });
+    });
+
+    contract("when sender is offer's owner, and when 9.5 more hours over minHours have passed but maxHours haven't passed", () => {
+      let approvedAt = 1535297540453;
+      let confirmedAt = approvedAt + 3 * 60 * 60 * 1000;
+      let sharingAgreement;
+
+      before(async () => {
+        await sharingToken.transfer(accounts[1], 1000000);
+        await sharingToken.approve(borrowRequests.address, 1000000, {from: accounts[1]});
+
+        await offers.createOffer("Offer1", "0x1", {from: accounts[2]});
+        await borrowRequests.create(1, 200, 5, 720, 2160, 6, {from: accounts[1]});
+        await fakeClock.setTime(approvedAt);
+        await borrowRequests.approve(1, {from: accounts[2]});
+        await fakeClock.setTime(confirmedAt);
+        await borrowRequests.confirmRequest(1, {from: accounts[1], value: 200});
+
+        await fakeClock.setTime(confirmedAt + (720 + 9.5) * 60 * 60 * 1000);
+
+        sharingAgreement = SharingAgreement.at(await borrowRequests.sharingContracts(1));
+
+        await sharingAgreement.confirmReturn({from: accounts[2]});
+      });
+
+      it("transfers sharingTokens equal to (minHours + 10) * tokensPerHour to offer's owner", async () => {
+        assert.equal(await sharingToken.balanceOf(accounts[2]), (720 + 10) * 5);
+      });
+
+      it("sets borrowerRefund", async () => {
+        SharingAgreement.at(await borrowRequests.sharingContracts(1));
+
+        assert.equal(await sharingAgreement.borrowerRefund(), 2160 * 5 - (720 + 10) * 5);
+      });
+    });
+
+    contract("when maxHours have passed", () => {
+      let approvedAt = 1535297540453;
+      let confirmedAt = approvedAt + 3 * 60 * 60 * 1000;
+      let sharingAgreement;
+
+      before(async () => {
+        await sharingToken.transfer(accounts[1], 1000000);
+        await sharingToken.approve(borrowRequests.address, 1000000, {from: accounts[1]});
+
+        await offers.createOffer("Offer1", "0x1", {from: accounts[2]});
+        await borrowRequests.create(1, 200, 5, 720, 2160, 6, {from: accounts[1]});
+        await fakeClock.setTime(approvedAt);
+        await borrowRequests.approve(1, {from: accounts[2]});
+        await fakeClock.setTime(confirmedAt);
+        await borrowRequests.confirmRequest(1, {from: accounts[1], value: 200});
+
+        await fakeClock.setTime(confirmedAt + 3000 * 60 * 60 * 1000);
+
+        sharingAgreement = SharingAgreement.at(await borrowRequests.sharingContracts(1));
+
+        await sharingAgreement.confirmReturn({from: accounts[2]});
+      });
+
+      it("transfers sharingTokens equal to maxHours * tokensPerHour to offer's owner", async () => {
+        assert.equal(await sharingToken.balanceOf(accounts[2]), 2160 * 5);
+      });
+
+      it("doesn't set borrowerRefund", async () => {
+        assert.equal(await sharingAgreement.borrowerRefund(), 0);
+      });
+    });
+
+    contract("when sender is not offer's owner", () => {
+      before(async () => {
+        await sharingToken.transfer(accounts[1], 1000000);
+        await sharingToken.approve(borrowRequests.address, 1000000, {from: accounts[1]});
+
+        await offers.createOffer("Offer1", "0x1", {from: accounts[2]});
+        await borrowRequests.create(1, 200, 3, 720, 2160, 6, {from: accounts[1]});
+        await borrowRequests.approve(1, {from: accounts[2]});
+        await borrowRequests.confirmRequest(1, {from: accounts[1], value: 200});
+      });
+
+      it("is reverted", async () => {
+        const sharingAgreement = SharingAgreement.at(await borrowRequests.sharingContracts(1));
+
+        await assertTransaction.isReverted(
+          sharingAgreement.confirmReturn,
+          [{from: accounts[3]}],
+          "Sender must be offer's owner"
+        );
+      });
+    });
+
+    contract("when return has already been confirmed", () => {
+      let approvedAt = 1535297540453;
+      let confirmedAt = approvedAt + 3 * 60 * 60 * 1000;
+
+      before(async () => {
+        await sharingToken.transfer(accounts[1], 1000000);
+        await sharingToken.approve(borrowRequests.address, 1000000, {from: accounts[1]});
+
+        await offers.createOffer("Offer1", "0x1", {from: accounts[2]});
+        await borrowRequests.create(1, 200, 5, 720, 2160, 6, {from: accounts[1]});
+        await fakeClock.setTime(approvedAt);
+        await borrowRequests.approve(1, {from: accounts[2]});
+        await fakeClock.setTime(confirmedAt);
+        await borrowRequests.confirmRequest(1, {from: accounts[1], value: 200});
+
+        await fakeClock.setTime(confirmedAt + 3000 * 60 * 60 * 1000);
+      });
+
+      it("is reverted", async () => {
+        const sharingAgreement = SharingAgreement.at(await borrowRequests.sharingContracts(1));
+
+        await sharingAgreement.confirmReturn({from: accounts[2]});
+
+        await assertTransaction.isReverted(
+          sharingAgreement.confirmReturn,
+          [{from: accounts[2]}],
+          "Return has already been confirmed"
         );
       });
     });

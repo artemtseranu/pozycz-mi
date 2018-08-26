@@ -175,4 +175,30 @@ contract BorrowRequests {
       confirmedAt: currentTime
     });
   }
+
+  function releaseOffer(uint offerId) public {
+    require(msg.sender == sharingContracts[offerId], "Sender must be offer's sharing agreement contract");
+
+    OfferLocks offerLocks = OfferLocks(contractRegistry.getContractAddress("offerLocks"));
+    offerLocks.unlockOffer(offerId);
+
+    approvals[offerId] = Approval(0, 0);
+    sharingContracts[offerId] = 0;
+  }
+
+  function getOfferApprovalRequestId(uint offerId) public view returns(uint) {
+    return approvals[offerId].requestId;
+  }
+
+  function getRequestMinHours(uint256 requestId) public view returns(uint16) {
+    return requests[requestId].minHours;
+  }
+
+  function getRequestMaxHours(uint256 requestId) public view returns(uint16) {
+    return requests[requestId].maxHours;
+  }
+
+  function getRequestTokensPerHour(uint256 requestId) public view returns(uint256) {
+    return requests[requestId].payPerHour;
+  }
 }

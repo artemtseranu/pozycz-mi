@@ -401,4 +401,26 @@ contract("BorrowRequests", (accounts) => {
       });
     });
   });
+
+  contract("releaseOffer", () => {
+    contract("when sender isn't offer's sharing agreement contract", () => {
+      before(async () => {
+        await sharingToken.transfer(accounts[1], 1000000);
+        await sharingToken.approve(borrowRequests.address, 1000000, {from: accounts[1]});
+
+        await offers.createOffer("Offer1", "0x1", {from: accounts[0]});
+        await borrowRequests.create(1, 200, 5, 720, 2160, 6, {from: accounts[1]});
+        await borrowRequests.approve(1, {from: accounts[0]});
+        await borrowRequests.confirmRequest(1, {from: accounts[1], value: 200});
+      });
+
+      it("isReverted", async () => {
+        await assertTransaction.isReverted(
+          borrowRequests.releaseOffer,
+          [1, {from: accounts[1]}],
+          "Sender must be offer's sharing agreement contract"
+        );
+      });
+    });
+  });
 });
