@@ -72,7 +72,17 @@ contract SharingAgreement {
   }
 
   function withdrawRefundAndGuarantee() public {
+    require(returnConfirmed, "Return hasn't been confirmed");
 
+    BorrowRequests borrowRequests = BorrowRequests(contractRegistry.getContractAddress("borrowRequests"));
+    address borrower = borrowRequests.getRequestBorrower(borrowRequestId);
+
+    require(msg.sender == borrower, "Sender must be offer's borrower");
+
+    SharingToken sharingToken = SharingToken(contractRegistry.getContractAddress("sharingToken"));
+    sharingToken.transfer(borrower, borrowerRefund);
+
+    selfdestruct(borrower);
   }
 
   function() internal payable {}

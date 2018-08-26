@@ -227,4 +227,86 @@ contract("SharingAgreement", (accounts) => {
       });
     });
   });
+
+  contract("withdrawRefundAndGuarantee", () => {
+    contract("when return is confirmed, and sender is offer's borrower", () => {
+      let sharingAgreement;
+
+      before(async () => {
+        await sharingToken.transfer(accounts[1], 1000000);
+        await sharingToken.approve(borrowRequests.address, 1000000, {from: accounts[1]});
+
+        await offers.createOffer("Offer1", "0x1", {from: accounts[2]});
+        await borrowRequests.create(1, 20 * (10 ** 18), 5, 720, 2160, 6, {from: accounts[1]});
+        await borrowRequests.approve(1, {from: accounts[2]});
+        await borrowRequests.confirmRequest(1, {from: accounts[1], value: 20 * (10 ** 18)});
+
+        sharingAgreement = SharingAgreement.at(await borrowRequests.sharingContracts(1));
+        await sharingAgreement.confirmReturn({from: accounts[2]});
+      });
+
+      it("transfers guarantee and refund to borrower", async () => {
+        const prevEthBalance = await web3.eth.getBalance(accounts[1]);
+        const prevSharingTokenBalance = await sharingToken.balanceOf(accounts[1]);
+
+        await sharingAgreement.withdrawRefundAndGuarantee({from: accounts[1]});
+
+        assert(await web3.eth.getBalance(accounts[1]) > prevEthBalance + 19 * (10 ** 18)); // accounting for gas cost
+
+        assert.equal(
+          await sharingToken.balanceOf(accounts[1]),
+          parseInt(prevSharingTokenBalance) + (2160 * 5) - (720 * 5)
+        );
+      });
+    });
+
+    contract("when return is not confirmed", () => {
+      let sharingAgreement;
+
+      before(async () => {
+        await sharingToken.transfer(accounts[1], 1000000);
+        await sharingToken.approve(borrowRequests.address, 1000000, {from: accounts[1]});
+
+        await offers.createOffer("Offer1", "0x1", {from: accounts[2]});
+        await borrowRequests.create(1, 20 * (10 ** 18), 5, 720, 2160, 6, {from: accounts[1]});
+        await borrowRequests.approve(1, {from: accounts[2]});
+        await borrowRequests.confirmRequest(1, {from: accounts[1], value: 20 * (10 ** 18)});
+
+        sharingAgreement = SharingAgreement.at(await borrowRequests.sharingContracts(1));
+      });
+
+      it("is reverted", async () => {
+        await assertTransaction.isReverted(
+          sharingAgreement.withdrawRefundAndGuarantee,
+          [{from: accounts[1]}],
+          "Return hasn't been confirmed"
+        );
+      });
+    });
+
+    contract("when sender isn't offer's borrower", () => {
+      let sharingAgreement;
+
+      before(async () => {
+        await sharingToken.transfer(accounts[1], 1000000);
+        await sharingToken.approve(borrowRequests.address, 1000000, {from: accounts[1]});
+
+        await offers.createOffer("Offer1", "0x1", {from: accounts[2]});
+        await borrowRequests.create(1, 20 * (10 ** 18), 5, 720, 2160, 6, {from: accounts[1]});
+        await borrowRequests.approve(1, {from: accounts[2]});
+        await borrowRequests.confirmRequest(1, {from: accounts[1], value: 20 * (10 ** 18)});
+
+        sharingAgreement = SharingAgreement.at(await borrowRequests.sharingContracts(1));
+        await sharingAgreement.confirmReturn({from: accounts[2]});
+      });
+
+      it("is reverted", async () => {
+        await assertTransaction.isReverted(
+          sharingAgreement.withdrawRefundAndGuarantee,
+          [{from: accounts[3]}],
+          "Sender must be offer's borrower"
+        );
+      });
+    });
+  });
 });

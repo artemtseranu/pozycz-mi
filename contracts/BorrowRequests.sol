@@ -190,6 +190,10 @@ contract BorrowRequests {
     return approvals[offerId].requestId;
   }
 
+  function getRequestBorrower(uint256 requestId) public view returns(address) {
+    return requests[requestId].borrower;
+  }
+
   function getRequestMinHours(uint256 requestId) public view returns(uint16) {
     return requests[requestId].minHours;
   }
