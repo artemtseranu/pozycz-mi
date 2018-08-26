@@ -1,29 +1,36 @@
 const BorrowRequests = artifacts.require("BorrowRequests");
 const Offers = artifacts.require("Offers");
 const FakeClock = artifacts.require("FakeClock");
+const OfferLocks = artifacts.require("OfferLocks");
 
 const assertTransaction = require("./support/assertTransaction");
 
 contract("BorrowRequests", (accounts) => {
   let instance;
-  let offersInstance;
+  let offers;
+  let fakeClock;
+  let offerLocks;
 
   before(async () => {
     instance = await BorrowRequests.deployed();
-    offersInstance = await Offers.deployed();
+    offers = await Offers.deployed();
     fakeClock = await FakeClock.deployed();
+    offerLocks = await OfferLocks.deployed();
   });
 
   contract("create", () => {
     before(async () => {
-      await offersInstance.createOffer.sendTransaction("Offer 1", "0x1", {from: accounts[0]});
-      await offersInstance.lockOffer.sendTransaction(1, {from: accounts[0]});
-      await offersInstance.unlockOffer.sendTransaction(1, {from: accounts[0]});
-      await offersInstance.createOffer.sendTransaction("Offer 2", "0x2", {from: accounts[0]});
-      await offersInstance.lockOffer.sendTransaction(2, {from: accounts[0]});
-      await offersInstance.createOffer.sendTransaction("Offer 3", "0x3", {from: accounts[0]});
-      await offersInstance.deleteOffer.sendTransaction(3, {from: accounts[0]});
-      await offersInstance.createOffer.sendTransaction("Offer 4", "0x4", {from: accounts[0]});
+      await offers.createOffer.sendTransaction("Offer 1", "0x1", {from: accounts[0]});
+      await offerLocks.lockOffer.sendTransaction(1, {from: accounts[0]});
+      await offerLocks.unlockOffer.sendTransaction(1, {from: accounts[0]});
+
+      await offers.createOffer.sendTransaction("Offer 2", "0x2", {from: accounts[0]});
+      await offerLocks.lockOffer.sendTransaction(2, {from: accounts[0]});
+
+      await offers.createOffer.sendTransaction("Offer 3", "0x3", {from: accounts[0]});
+      await offers.deleteOffer.sendTransaction(3, {from: accounts[0]});
+
+      await offers.createOffer.sendTransaction("Offer 4", "0x4", {from: accounts[0]});
     });
 
     it("creates new request", async () => {
@@ -89,45 +96,45 @@ contract("BorrowRequests", (accounts) => {
       await fakeClock.setTime.sendTransaction(time1, {from: accounts[0]});
 
       // Offer (1) is created, and then requested (1)
-      await offersInstance.createOffer.sendTransaction("Offer 1", "0x1", {from: accounts[0]});
+      await offers.createOffer.sendTransaction("Offer 1", "0x1", {from: accounts[0]});
       await instance.create.sendTransaction(1, 100, 1, 720, 2160, 2, {from: accounts[1]});
 
       // Offer (2) is created, and then requested (2)
-      await offersInstance.createOffer.sendTransaction("Offer 2", "0x2", {from: accounts[0]});
+      await offers.createOffer.sendTransaction("Offer 2", "0x2", {from: accounts[0]});
       await instance.create.sendTransaction(1, 100, 1, 720, 2160, 2, {from: accounts[1]});
 
       // Offer (3) is created, requested (3), and then locked
-      await offersInstance.createOffer.sendTransaction("Offer 3", "0x3", {from: accounts[0]});
+      await offers.createOffer.sendTransaction("Offer 3", "0x3", {from: accounts[0]});
       await instance.create.sendTransaction(3, 100, 1, 720, 2160, 2, {from: accounts[1]});
-      await offersInstance.lockOffer.sendTransaction(3, {from: accounts[0]});
+      await offerLocks.lockOffer.sendTransaction(3, {from: accounts[0]});
 
       // Offer (4) is created, requested (4), and then deleted
-      await offersInstance.createOffer.sendTransaction("Offer 4", "0x4", {from: accounts[0]});
+      await offers.createOffer.sendTransaction("Offer 4", "0x4", {from: accounts[0]});
       await instance.create.sendTransaction(4, 100, 1, 720, 2160, 2, {from: accounts[1]});
-      await offersInstance.deleteOffer.sendTransaction(4, {from: accounts[0]});
+      await offers.deleteOffer.sendTransaction(4, {from: accounts[0]});
 
       // Offer (5) is created, requested (5), locked, and then unlocked incrementing its nonce
-      await offersInstance.createOffer.sendTransaction("Offer 5", "0x5", {from: accounts[0]});
+      await offers.createOffer.sendTransaction("Offer 5", "0x5", {from: accounts[0]});
       await instance.create.sendTransaction(5, 100, 1, 720, 2160, 2, {from: accounts[1]});
-      await offersInstance.lockOffer.sendTransaction(5, {from: accounts[0]});
-      await offersInstance.unlockOffer.sendTransaction(5, {from: accounts[0]});
+      await offerLocks.lockOffer.sendTransaction(5, {from: accounts[0]});
+      await offerLocks.unlockOffer.sendTransaction(5, {from: accounts[0]});
 
       // Offer6 is created, requested 2 times (6, 7) with hoursToConfirm set to 2,
       // and request6 is approved at time1
-      await offersInstance.createOffer.sendTransaction("Offer 6", "0x6", {from: accounts[0]});
+      await offers.createOffer.sendTransaction("Offer 6", "0x6", {from: accounts[0]});
       await instance.create.sendTransaction(6, 100, 1, 720, 2160, 2, {from: accounts[1]});
       await instance.create.sendTransaction(6, 100, 1, 720, 2160, 2, {from: accounts[2]});
       await instance.approve.sendTransaction(6, {from: accounts[0]});
 
       // Offer7 is created, requested 2 times (8, 9) with hoursToConfirm set to 2,
       // and request8 is approved at time1
-      await offersInstance.createOffer.sendTransaction("Offer 7", "0x7", {from: accounts[0]});
+      await offers.createOffer.sendTransaction("Offer 7", "0x7", {from: accounts[0]});
       await instance.create.sendTransaction(7, 100, 1, 720, 2160, 2, {from: accounts[1]});
       await instance.create.sendTransaction(7, 100, 1, 720, 2160, 2, {from: accounts[1]});
       await instance.approve.sendTransaction(8, {from: accounts[0]});
 
       // Offer8 is created, request10 is created
-      await offersInstance.createOffer.sendTransaction("Offer 8", "0x8", {from: accounts[0]});
+      await offers.createOffer.sendTransaction("Offer 8", "0x8", {from: accounts[0]});
       await instance.create.sendTransaction(8, 100, 1, 720, 2160, 2, {from: accounts[1]});
     });
 

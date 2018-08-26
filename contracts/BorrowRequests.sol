@@ -3,6 +3,7 @@ pragma solidity ^0.4.23;
 import "./ContractRegistry.sol";
 import "./Offers.sol";
 import "./Clock.sol";
+import "./OfferLocks.sol";
 
 contract BorrowRequests {
   struct Request {
@@ -56,12 +57,13 @@ contract BorrowRequests {
   public
   {
     Offers offers = Offers(contractRegistry.getContractAddress("offers"));
+    OfferLocks offerLocks = OfferLocks(contractRegistry.getContractAddress("offerLocks"));
 
-    require(!offers.isOfferLocked(offerId), "Not allowed for locked offers");
+    require(!offerLocks.isOfferLocked(offerId), "Not allowed for locked offers");
     require(!offers.isOfferDeleted(offerId), "Not allowed for deleted offers");
 
     address borrower = msg.sender;
-    uint32 offerNonce = offers.getNonce(offerId);
+    uint32 offerNonce = offerLocks.getOfferNonce(offerId);
 
     Request memory request = Request({
       offerId: offerId,
@@ -92,13 +94,14 @@ contract BorrowRequests {
 
   function approve(uint id) public {
     Offers offers = Offers(contractRegistry.getContractAddress("offers"));
+    OfferLocks offerLocks = OfferLocks(contractRegistry.getContractAddress("offerLocks"));
     Request memory request = requests[id];
     address offerOwner = offers.getOfferOwner(request.offerId);
 
     require(offerOwner == msg.sender, "Restricted to offer's owner");
-    require(!offers.isOfferLocked(request.offerId), "Not allowed for locked offers");
+    require(!offerLocks.isOfferLocked(request.offerId), "Not allowed for locked offers");
     require(!offers.isOfferDeleted(request.offerId), "Not allowed for deleted offers");
-    require(request.offerNonce == offers.getNonce(request.offerId), "Request's offerNonce doesn't match offer's current nonce");
+    require(request.offerNonce == offerLocks.getOfferNonce(request.offerId), "Request's offerNonce doesn't match offer's current nonce");
 
     Clock clock = Clock(contractRegistry.getContractAddress("clock"));
     uint currentTime = clock.getTime();
