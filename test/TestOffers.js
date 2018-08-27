@@ -15,6 +15,9 @@ contract("Offers", (accounts) => {
     contractRegistry = await ContractRegistry.deployed();
   });
 
+  // * Test that 'createOffer' function adds a new Offer record with correct
+  //   attributes to the contract's state
+  // * Test that the function emits OfferCreated event
   contract("#createOffer", () => {
     it("creates new offer", async () => {
       await offers.createOffer.sendTransaction("Offer 1", "0x1", {from: accounts[0]})
@@ -48,6 +51,11 @@ contract("Offers", (accounts) => {
     });
   });
 
+  // * Test that 'updateOffer' functions updates 'description' and 'details'
+  //   attributes of the specified offer
+  // * Test that the function requires msg.sender to be offer's owner and offer
+  //   to be locked by its owner
+  // * Test that the function emits OfferUpdated event
   contract("#updateOffer", () => {
     before(async () => {
       await contractRegistry.setContractAddress("borrowRequests", accounts[1]);
@@ -117,6 +125,10 @@ contract("Offers", (accounts) => {
     });
   });
 
+  // * Test that 'deleteOffer' function marks the specified offer as deleted
+  // * Test that the function requires msg.sender to be the offer's owner and
+  //   offer to be unlocked or locked by its owner
+  // * Test that the function emits OfferDeleted event
   contract("#deleteOffer", () => {
     before(async () => {
       await contractRegistry.setContractAddress("borrowRequests", accounts[9]);

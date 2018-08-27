@@ -25,6 +25,8 @@ contract("SharingAgreement", (accounts) => {
     offerLocks = await OfferLocks.deployed();
   });
 
+  // * Test that the contract is created with correct attributes
+  // * Test that the contract can only be created by the BorrowRequests contract
   contract("constructor", () => {
     contract("when sender is BorrowRequests contract", () => {
       const createdAt = 1535287845671;
@@ -59,6 +61,17 @@ contract("SharingAgreement", (accounts) => {
     });
   });
 
+  // * Test that 'confirmReturn' function sets 'returnConfirmed' flag in the
+  //   contract's state
+  // * Test that the function transfers appropriate reward (depending on the
+  //   time for which the item was borrowed) to the offer's owner
+  // * Test that the function sets correct amount of the refund for the
+  //   borrower in the contract's state
+  // * Test that the function unlocks the offer, and unsets mappings from offer's ID
+  //   to approval record and sharing contract address
+  // * Test that the function requires the following conditions to be met:
+  //   - msg.sender is offer's owner
+  //   - returning of the item hasn't already been confirmed
   contract("confirmReturn", () => {
     contract("when sender is offer's owner, and when minHours have passed", () => {
       let approvedAt = 1535297540453;
@@ -228,6 +241,11 @@ contract("SharingAgreement", (accounts) => {
     });
   });
 
+  // * Test that 'withdrawRefundAndGuarantee' function transfers the amount of
+  //   sharing tokens equal to the refund amount and guarantee to the borrower
+  // * Test that the function requires the following conditions to be met:
+  //   - returning of the item has been confirmed
+  //   - msg.sender is borrower
   contract("withdrawRefundAndGuarantee", () => {
     contract("when return is confirmed, and sender is offer's borrower", () => {
       let sharingAgreement;
@@ -315,6 +333,14 @@ contract("SharingAgreement", (accounts) => {
     });
   });
 
+  // * Test that 'claimRewardAndGuarantee' function transfers all of the sharing
+  //   tokens locked in the contract and the guarantee to the offer's owner
+  // * Test that the function unlocks the offer, and unsets mappings from offer's ID
+  //   to approval record and sharing agreement contract address
+  // * Test that the function requires the following conditions to be met:
+  //   - returning of the item hasn't been confirmed
+  //   - maximum amount of time agreed upon in the contract has passed
+  //   - msg.sender is offer's owner
   contract("claimRewardAndGuarantee", () => {
     contract("when sender is offer's owner, and maxHours have passed", () => {
       let sharingAgreement;

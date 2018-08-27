@@ -15,6 +15,11 @@ contract("OfferLocks", (accounts) => {
     contractRegistry = await ContractRegistry.deployed();
   });
 
+  // * Test that 'lockOffer' function sets a mapping from specified offer's ID
+  //   to and address of the account that holds the lock
+  // * Test that the function requires msg.sender to be offer's owner or a
+  //   BorrowRequests contract
+  // * Test that the function emits OfferLocked event
   contract("lockOffer", () => {
     before(async () => {
       await contractRegistry.setContractAddress("borrowRequests", accounts[1]);
@@ -56,6 +61,12 @@ contract("OfferLocks", (accounts) => {
     });
   });
 
+  // * Test that 'unlockOffer' function unsets a mapping from specified offer's ID
+  //   to and address of the account that holds the lock
+  // * Test that the function increments offer's nonce
+  // * Test that the function requires msg.sender the account which currently
+  //   holds specified offer's lock
+  // * Test that the function emits OfferUnlocked event
   contract("unlockOffer", () => {
     before(async () => {
       await contractRegistry.setContractAddress("borrowRequests", accounts[1]);

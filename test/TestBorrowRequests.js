@@ -22,6 +22,9 @@ contract("BorrowRequests", (accounts) => {
     sharingToken = await SharingToken.deployed();
   });
 
+  // * Test that 'stop' function marks the contract as 'stopped'.
+  // * Test the function requires the following conditions to be met:
+  //   - msg.sender is the address that deployed the contract
   contract("stop", () => {
     contract("when sender is contract's owner", () => {
       it("sets stopped flag", async () => {
@@ -42,6 +45,9 @@ contract("BorrowRequests", (accounts) => {
     });
   });
 
+  // * Test that 'resume' function unmarks the contract as 'stopped'.
+  // * Test the function requires the following conditions to be met:
+  //   - msg.sender is the address that deployed the contract
   contract("resume", () => {
     contract("when sender is contract's owner", () => {
       before(async () => {
@@ -70,6 +76,12 @@ contract("BorrowRequests", (accounts) => {
     });
   });
 
+  // * Test that 'create' function adds a new 'request to borrow' record to the
+  // contract's state with correct attributes.
+  // * Test that the function requires the following conditions to be met:
+  //   - specified offer is not locked or deleted
+  //   - the contract hasn't been stopped
+  // * Test that the function emits BorrowRequestCreated event
   contract("create", () => {
     before(async () => {
       await offers.createOffer.sendTransaction("Offer 1", "0x1", {from: accounts[0]});
@@ -154,6 +166,16 @@ contract("BorrowRequests", (accounts) => {
     });
   });
 
+  // * Test that 'approve' function sets a mapping form a specified offer ID to
+  //   an 'approval' record with correct attributes.
+  // * Test that the function requires the following conditions to be met:
+  //   - msg.sender is specified offer's owner
+  //   - specified offer isn't locked or deleted
+  //   - specified offer's current nonce matches the one that was recorded when
+  //     'request to borrow' was created
+  //   - the approval for the specified offer doesn't exist or has expired
+  //   - the contract hasn't been stopped
+  // * Test that the function emits BorrowRequestApproved event
   contract("approve", () => {
     const time1 = 1535226900000; // 2018-08-25T22:55
 
@@ -297,6 +319,19 @@ contract("BorrowRequests", (accounts) => {
     });
   });
 
+  // * Test that 'confirmRequest' function deploys a new SharingAgreement
+  //   contract for the specified offer, and sets a mapping from the offer's ID
+  //   to the deployed contract's address
+  // * Test that the function transfers correct amount of ether and sharing
+  //   tokens to the deployed contract
+  // * Test that the function locks the specified offer
+  // * Test that the function requires the following conditions to be met:
+  //   - offer has an approved 'request to borrow' which hasn't expired
+  //   - msg.sender is an owner of the 'request to borrow'
+  //   - msg has enough ether and sharing tokens for the agreed upon guarantee
+  //     and reward
+  //   - the contract hasn't been stopped
+  // * Test that the function emits BorrowRequestConfirmed event
   contract("confirmRequest", () => {
     contract("when request is approved and sender is its owner, they sent enough ether for the guarantee and they have enough Sharing tokens", () => {
       let approvedAt;
@@ -492,6 +527,9 @@ contract("BorrowRequests", (accounts) => {
     });
   });
 
+  // Test that 'releaseOffer' function requires msg.sender to be a sharing
+  // agreement contract for the specified contract. The effects of this
+  // function are tested in the tests for SharingAgreement contract.
   contract("releaseOffer", () => {
     contract("when sender isn't offer's sharing agreement contract", () => {
       before(async () => {

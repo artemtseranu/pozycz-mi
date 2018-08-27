@@ -9,6 +9,10 @@ contract("ContractRegistry", (accounts) => {
     instance = await ContractRegistry.deployed();
   });
 
+  // * Test that 'setContractAddress' function sets a mapping from a contract
+  //   name to a contract address
+  // * Test that the function requires msg.sender to be the address which
+  //   deployed the contract
   contract("setContractAddress", () => {
     it("associates given contract name with a given address", async () => {
       const address = "0xa5366f71ac599262e83cffa63d9e0722d47046e7";
