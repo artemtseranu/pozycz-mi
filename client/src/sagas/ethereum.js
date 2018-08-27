@@ -11,6 +11,7 @@ import * as EthereumState from 'Entities/ethereum_state';
 import * as OperationState from 'Entities/operation_state';
 import * as Events from 'Events/ethereum';
 
+import contractRegistryArtifact from 'ContractArtifacts/ContractRegistry.json';
 import offersContractArtifact from 'ContractArtifacts/Offers.json';
 
 function* init({ dispatch }) {
@@ -20,15 +21,21 @@ function* init({ dispatch }) {
 
   yield put({ type: Events.Init.STARTED });
 
+  const ContractRegistry = TruffleContract(contractRegistryArtifact);
+  ContractRegistry.setProvider(window.web3.currentProvider);
+
   const OffersContract = TruffleContract(offersContractArtifact);
   OffersContract.setProvider(window.web3.currentProvider);
 
+  let contractRegistry;
   let offersContract;
 
   try {
-    offersContract = yield call(OffersContract.deployed);
+    contractRegistry = yield call(ContractRegistry.deployed);
+    const offersContractAddress = yield call(contractRegistry.getContractAddress, 'offers');
+    offersContract = OffersContract.at(offersContractAddress);
   } catch (error) {
-    const errorMessage = `Failed to get deployed Offers contract instance. ${error.message}`;
+    const errorMessage = `Failed to initialize contracts. ${error.message}`;
     yield put({ type: Events.Init.FAILED, errorMessage });
     return;
   }

@@ -52,7 +52,7 @@ class EthereumComponent extends React.Component {
         return (
           <React.Fragment>
             <p>
-              Failed to connect to the Ethereum network.
+              Failed to initialize application.
             </p>
             <p>
               {OperationState.getErrorMessage(init)}

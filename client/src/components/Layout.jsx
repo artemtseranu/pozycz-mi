@@ -22,13 +22,16 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 
 import * as Paths from 'Constants/paths';
 
-const styles = theme => ({
+const styles = (theme) => ({
   menuButton: {
     marginLeft: -12,
     marginRight: 20,
   },
   title: {
     flexGrow: 1,
+  },
+  currentAccount: {
+    marginRight: theme.spacing.unit,
   },
   menuTitle: {
     padding: theme.spacing.unit * 3,
@@ -79,6 +82,19 @@ class Layout extends React.Component {
     }
   }
 
+  currentAccount() {
+    if (!window.web3) return <React.Fragment />;
+
+    const { classes } = this.props;
+
+    return (
+      <Typography color="inherit" className={classes.currentAccount}>
+        Current account:&nbsp;
+        {window.web3.eth.accounts[0]}
+      </Typography>
+    );
+  }
+
   backButton() {
     const { dispatch } = this.props; // eslint-disable-line react/prop-types
 
@@ -94,6 +110,7 @@ class Layout extends React.Component {
 
     switch (pathname) {
       case Paths.MY_OFFERS:
+      case Paths.DISCOVER_OFFERS:
         return (
           <Button color="inherit" onClick={() => dispatch(push(Paths.CREATE_OFFER))}>
             <AddIcon />
@@ -140,6 +157,7 @@ class Layout extends React.Component {
             <Typography variant="title" color="inherit" className={classes.title}>
               {this.title()}
             </Typography>
+            {this.currentAccount()}
             {this.button()}
           </Toolbar>
         </AppBar>
