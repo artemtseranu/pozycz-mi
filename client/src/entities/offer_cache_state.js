@@ -211,13 +211,13 @@ export function updateOnOfferDeleted(offerCache, { offerDeletedEvent }) {
     updatedOfferCache = updatedOfferCache.deleteIn(['offers', id]);
     const offerIdIdx = offerCache.get('offerIds').indexOf(id);
 
-    if (offerIdIdx > 0) {
+    if (offerIdIdx > -1) {
       updatedOfferCache = updatedOfferCache.deleteIn(['offerIds', offerIdIdx]);
     }
 
     const myOfferIdIdx = offerCache.get('myOfferIds').indexOf(id);
 
-    if (myOfferIdIdx > 0) {
+    if (myOfferIdIdx > -1) {
       updatedOfferCache = updatedOfferCache.deleteIn(['myOfferIds', myOfferIdIdx]);
     }
   } else {

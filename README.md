@@ -7,15 +7,15 @@ The smart contracts that this project implements, could be used to incentivize i
 ## How to set up
 ### Requirements
 * git
-* Node.js
+* truffle
 * ganache-cli
 * Browser with Metamask plugin
 * IPFS
 ### Running development server
 * Run `ganache-cli` in a separate terminal window or in the background
-* Download the repository
+* Clone the repository
 ```
-git clone https://github.com:artemtseranu/shara
+git clone https://github.com:artemtseranu/SharingEconomy
 ```
 * Build and deploy contracts<br>
 ```
@@ -42,6 +42,10 @@ truffle test --network=test
 ```
 
 ## User stories
+
+Unfortunatelly I haven't been able to implement the UI for most of these user
+stories in time. Only the underlying smart contract functionality is fully
+implemented.
 
 1. As a user I can create an offer to share some item
 * Can provide a item's description

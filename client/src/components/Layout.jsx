@@ -167,7 +167,7 @@ class Layout extends React.Component {
           classes={{ paper: classes.menuPaper }}
         >
           <Typography variant="title" className={classes.menuTitle}>
-            Shara
+            Sharing Economy
           </Typography>
           <Divider />
           <List component="nav">

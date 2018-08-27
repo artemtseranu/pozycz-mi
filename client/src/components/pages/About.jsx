@@ -2,6 +2,6 @@ import React from 'react';
 
 export default () => (
   <div>
-    About
+    A platform for sharing stuff :)
   </div>
 );
