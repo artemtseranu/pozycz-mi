@@ -1,6 +1,7 @@
 pragma solidity ^0.4.23;
 
 import "zeppelin/contracts/math/Math.sol";
+import "zeppelin/contracts/math/SafeMath.sol";
 
 import "./ContractRegistry.sol";
 import "./Clock.sol";
@@ -10,6 +11,7 @@ import "./BorrowRequests.sol";
 
 contract SharingAgreement {
   using Math for uint;
+  using SafeMath for uint;
 
   ContractRegistry contractRegistry;
   uint public offerId;
@@ -43,7 +45,7 @@ contract SharingAgreement {
     Clock clock = Clock(contractRegistry.getContractAddress("clock"));
 
     uint hour = 60 * 60 * 1000;
-    uint hoursSinceCreated = (clock.getTime() - createdAt) / hour;
+    uint hoursSinceCreated = uint(clock.getTime() - createdAt).div(hour);
 
     if ((clock.getTime() - createdAt) % hour != 0) {
       hoursSinceCreated += 1;
@@ -55,14 +57,11 @@ contract SharingAgreement {
       .max256(uint(borrowRequests.getRequestMinHours(borrowRequestId)))
       .min256(uint(borrowRequests.getRequestMaxHours(borrowRequestId)));
 
-    uint offerOwnerReward = (
-      hoursToReward *
-      borrowRequests.getRequestTokensPerHour(borrowRequestId)
-    );
+    uint offerOwnerReward = hoursToReward.mul(borrowRequests.getRequestTokensPerHour(borrowRequestId));
 
     SharingToken sharingToken = SharingToken(contractRegistry.getContractAddress("sharingToken"));
 
-    borrowerRefund = sharingToken.balanceOf(this) - offerOwnerReward;
+    borrowerRefund = sharingToken.balanceOf(this).sub(offerOwnerReward);
 
     sharingToken.transfer(msg.sender, offerOwnerReward);
 
@@ -92,7 +91,7 @@ contract SharingAgreement {
     Clock clock = Clock(contractRegistry.getContractAddress("clock"));
 
     require(
-      uint(clock.getTime()) > uint(createdAt) + uint(borrowRequests.getRequestMaxHours(borrowRequestId)) * 60 * 60 * 1000,
+      uint(clock.getTime()) > uint(createdAt).add(uint(borrowRequests.getRequestMaxHours(borrowRequestId)).mul(60 * 60 * 1000)),
       "maxHours haven't passed yet"
     );
 
