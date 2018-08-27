@@ -31,6 +31,7 @@ const styles = (theme) => ({
     flexGrow: 1,
   },
   currentAccount: {
+    flexGrow: 1,
     marginRight: theme.spacing.unit,
   },
   menuTitle: {

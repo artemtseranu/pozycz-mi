@@ -9,6 +9,7 @@ import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
+import Typography from '@material-ui/core/Typography';
 
 import { requireEthereum } from 'Lib/page_utils';
 
@@ -125,6 +126,9 @@ class CreateOffer extends React.Component {
           />
         </Card>
         <Card className={classes.card}>
+          <Typography>
+            Upload images
+          </Typography>
           {images}
           <input type="file" onChange={this.handleImageInputChange} />
         </Card>

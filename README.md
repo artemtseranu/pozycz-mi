@@ -15,11 +15,11 @@ The smart contracts that this project implements, could be used to incentivize i
 * Run `ganache-cli` in a separate terminal window or in the background
 * Clone the repository
 ```
-git clone https://github.com:artemtseranu/SharingEconomy
+git clone https://github.com/artemtseranu/SharingEconomy
 ```
 * Build and deploy contracts<br>
 ```
-cd shara
+cd SharingEconomy
 truffle compile && truffle migrate
 ```
 * Install front-end dependencies and run webpack dev server<br>
