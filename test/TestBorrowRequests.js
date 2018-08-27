@@ -22,6 +22,54 @@ contract("BorrowRequests", (accounts) => {
     sharingToken = await SharingToken.deployed();
   });
 
+  contract("stop", () => {
+    contract("when sender is contract's owner", () => {
+      it("sets stopped flag", async () => {
+        await borrowRequests.stop({from: accounts[0]});
+
+        assert(await borrowRequests.stopped());
+      });
+    });
+
+    contract("when sender is not contract's owner", () => {
+      it("is reverted", async () => {
+        await assertTransaction.isReverted(
+          borrowRequests.stop,
+          [{from: accounts[1]}],
+          "Sender must be contract's owner"
+        );
+      });
+    });
+  });
+
+  contract("resume", () => {
+    contract("when sender is contract's owner", () => {
+      before(async () => {
+        await borrowRequests.stop({from: accounts[0]});
+      });
+
+      it("unsets stopped flag", async () => {
+        await borrowRequests.resume({from: accounts[0]});
+
+        assert(!await borrowRequests.stopped());
+      });
+    });
+
+    contract("when sender is not contract's owner", () => {
+      before(async () => {
+        await borrowRequests.stop({from: accounts[0]});
+      });
+
+      it("is reverted", async () => {
+        await assertTransaction.isReverted(
+          borrowRequests.resume,
+          [{from: accounts[1]}],
+          "Sender must be contract's owner"
+        );
+      });
+    });
+  });
+
   contract("create", () => {
     before(async () => {
       await offers.createOffer.sendTransaction("Offer 1", "0x1", {from: accounts[0]});
@@ -90,6 +138,19 @@ contract("BorrowRequests", (accounts) => {
         "create",
         [4, 1000, 11, 720, 2160, 24, {from: accounts[1]}]
       );
+    });
+
+    contract("when contract is stopped", () => {
+      it("is reverted", async () => {
+        await offers.createOffer.sendTransaction("Offer 1", "0x1", {from: accounts[0]});
+        await borrowRequests.stop({from: accounts[0]});
+
+        await assertTransaction.isReverted(
+          borrowRequests.create,
+          [1, 200, 5, 720, 2160, 6, {from: accounts[1]}],
+          "The contract is stopped"
+        );
+      });
     });
   });
 
@@ -219,6 +280,20 @@ contract("BorrowRequests", (accounts) => {
         "approve",
         [10, {from: accounts[0]}]
       );
+    });
+
+    contract("when contract is stopped", () => {
+      it("is reverted", async () => {
+        await offers.createOffer("Offer1", "0x1", {from: accounts[0]});
+        await borrowRequests.create(1, 200, 5, 720, 2160, 6, {from: accounts[1]});
+        await borrowRequests.stop({from: accounts[0]})
+
+        await assertTransaction.isReverted(
+          borrowRequests.approve,
+          [1, {from: accounts[0]}],
+          "The contract is stopped"
+        );
+      });
     });
   });
 
@@ -397,6 +472,21 @@ contract("BorrowRequests", (accounts) => {
         await assertTransaction.isReverted(
           borrowRequests.confirmRequest,
           [1, {from: accounts[1], value: 200}]
+        );
+      });
+    });
+
+    contract("when contract is stopped", () => {
+      it("is reverted", async () => {
+        await offers.createOffer("Offer1", "0x1", {from: accounts[0]});
+        await borrowRequests.create(1, 200, 5, 720, 2160, 6, {from: accounts[1]});
+        await borrowRequests.approve(1, {from: accounts[0]});
+        await borrowRequests.stop({from: accounts[0]});
+
+        await assertTransaction.isReverted(
+          borrowRequests.confirmRequest,
+          [1, {from: accounts[1], value: 200}],
+          "The contract is stopped"
         );
       });
     });

@@ -36,6 +36,19 @@ contract BorrowRequests {
 
   mapping(uint => address) public sharingContracts;
 
+  address owner;
+  bool public stopped;
+
+  modifier requireOwner() {
+    require(msg.sender == owner, "Sender must be contract's owner");
+    _;
+  }
+
+  modifier stopInEmergency() {
+    require(!stopped, "The contract is stopped");
+    _;
+  }
+
   event BorrowRequestCreated(
     uint id,
     uint indexed offerId,
@@ -53,7 +66,16 @@ contract BorrowRequests {
   event BorrowRequestConfirmed(uint indexed offerId, address sharingContract, uint confirmedAt);
 
   constructor(address contractRegistryAddress) public {
+    owner = msg.sender;
     contractRegistry = ContractRegistry(contractRegistryAddress);
+  }
+
+  function stop() public requireOwner {
+    stopped = true;
+  }
+
+  function resume() public requireOwner {
+    stopped = false;
   }
 
   function create(
@@ -65,6 +87,7 @@ contract BorrowRequests {
     uint8 hoursToConfirm
   )
   public
+  stopInEmergency
   {
     Offers offers = Offers(contractRegistry.getContractAddress("offers"));
     OfferLocks offerLocks = OfferLocks(contractRegistry.getContractAddress("offerLocks"));
@@ -102,7 +125,7 @@ contract BorrowRequests {
     });
   }
 
-  function approve(uint id) public {
+  function approve(uint id) public stopInEmergency {
     Offers offers = Offers(contractRegistry.getContractAddress("offers"));
     OfferLocks offerLocks = OfferLocks(contractRegistry.getContractAddress("offerLocks"));
     Request memory request = requests[id];
@@ -135,7 +158,7 @@ contract BorrowRequests {
     });
   }
 
-  function confirmRequest(uint offerId) public payable {
+  function confirmRequest(uint offerId) public payable stopInEmergency {
     Approval storage approval = approvals[offerId];
 
     require(approval.requestId > 0, "Request must be approved");
