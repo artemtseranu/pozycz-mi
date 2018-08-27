@@ -9,6 +9,13 @@ import "./Offers.sol";
 import "./SharingToken.sol";
 import "./BorrowRequests.sol";
 
+/** @title Sharing Agreement
+  * Locks up the agreed upon amount of sharing tokens and ether once the borrower
+  * confirms that they received an item. Contains functions that allow item's
+  * owner and borrower to withdraw this value, the distribution of which
+  * depends on how long the borrower was in possetion of an item and whether
+  * they returned it in time.
+  */
 contract SharingAgreement {
   using Math for uint;
   using SafeMath for uint;
@@ -35,7 +42,11 @@ contract SharingAgreement {
     createdAt = clock.getTime();
   }
 
-  /** @dev Confirms that borrowed item has been returned to the owner. */
+  /** @dev Confirms that borrowed item has been returned to the owner.
+    * The item's owner is payed some amount (depending on how long the
+    * borrower held an item) of sharing tokens, remaining tokens are set
+    * aside for the borrower to withdraw later.
+    */
   function confirmReturn() {
     require(!returnConfirmed, "Return has already been confirmed");
 
@@ -71,6 +82,10 @@ contract SharingAgreement {
     borrowRequests.releaseOffer(offerId);
   }
 
+  /** @dev Transfers the value of guarantee and available refund to the
+    * borrower's account. Can only be called if item's owner confirmed that
+    * an item was returned.
+    */
   function withdrawRefundAndGuarantee() public {
     require(returnConfirmed, "Return hasn't been confirmed");
 
@@ -85,6 +100,11 @@ contract SharingAgreement {
     selfdestruct(borrower);
   }
 
+  /** @dev Transfers all of the sharing tokens an the value of a guarantee to
+    * the item owner's account. Is expected to be used if the borrower hasn't
+    * returned an item in the agreed upon amount of time or an item is
+    * damaged.
+    */
   function claimRewardAndGuarantee() public {
     require(!returnConfirmed, "Return has been confirmed");
 

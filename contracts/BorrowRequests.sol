@@ -9,6 +9,13 @@ import "./OfferLocks.sol";
 import "./SharingAgreement.sol";
 import "./SharingToken.sol";
 
+/** @title Borrow Requests
+  * This contract allows users interested in borrowing a specific item, to
+  * create 'borrow requests' for the offer's owner to review. It also provides
+  * an ability for the offer's owner to approve a specific request, and for
+  * the borrower to confirm that they have received an item, which creates a
+  * sharing agreement contract.
+  */
 contract BorrowRequests {
   using SafeERC20 for SharingToken;
 
@@ -71,12 +78,13 @@ contract BorrowRequests {
   }
 
   /** @dev Marks the contract as 'stopped' which prevents some of the functions
-    * from beings executed.
+    * from being executed.
     */
   function stop() public requireOwner {
     stopped = true;
   }
 
+  /** @dev Unmarks the contract as 'stopped' */
   function resume() public requireOwner {
     stopped = false;
   }
@@ -141,8 +149,8 @@ contract BorrowRequests {
     });
   }
 
-  /** @dev Approves a specified 'request to borrow'.
-    * @param id ID of a 'request to borrow' to approve.
+  /** @dev Approves a specified 'borrow request'.
+    * @param id ID of a 'borrow request' to approve.
     */
   function approve(uint id) public stopInEmergency {
     Offers offers = Offers(contractRegistry.getContractAddress("offers"));
@@ -177,8 +185,8 @@ contract BorrowRequests {
     });
   }
 
-  /** @dev Confirmes the borrower has received the requested item.
-    * @param offerId ID of the offer for which 'request to borrow' was made
+  /** @dev Confirmes that the borrower has received the requested item.
+    * @param offerId ID of the offer for which 'borrow request' was made
     */
   function confirmRequest(uint offerId) public payable stopInEmergency {
     Approval storage approval = approvals[offerId];
@@ -223,7 +231,7 @@ contract BorrowRequests {
 
   /** @dev Unlocks the specified offer, and unsets mappings from offer ID to
     * approval record and SharingAgreement address.
-    * @param offerId ID of the offer
+    * @param offerId
     */
   function releaseOffer(uint offerId) public {
     require(msg.sender == sharingContracts[offerId], "Sender must be offer's sharing agreement contract");
@@ -235,22 +243,42 @@ contract BorrowRequests {
     sharingContracts[offerId] = 0;
   }
 
+  /** @dev Returns an ID of approved request for the specified offer.
+    * @param offerId
+    * @returns requestId
+    */
   function getOfferApprovalRequestId(uint offerId) public view returns(uint) {
     return approvals[offerId].requestId;
   }
 
+  /** @dev Returns the address of an owner (borrower) of a specified request.
+    * @param requestId
+    * @returns borrowerAddress
+    */
   function getRequestBorrower(uint256 requestId) public view returns(address) {
     return requests[requestId].borrower;
   }
 
+  /** @dev Returns minHours field of a specified request.
+    * @param requestId
+    * @returns minHours
+    */
   function getRequestMinHours(uint256 requestId) public view returns(uint16) {
     return requests[requestId].minHours;
   }
 
+  /** @dev Returns maxHours field of a specified request.
+    * @param requestId
+    * @returns maxHours
+    */
   function getRequestMaxHours(uint256 requestId) public view returns(uint16) {
     return requests[requestId].maxHours;
   }
 
+  /** @dev Returns payPerHour field of a specified request.
+    * @param requestId
+    * @returns payPerHour
+    */
   function getRequestTokensPerHour(uint256 requestId) public view returns(uint256) {
     return requests[requestId].payPerHour;
   }
