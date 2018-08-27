@@ -28,6 +28,10 @@ contract Offers {
     contractRegistry = ContractRegistry(contractRegistryAddress);
   }
 
+  /** @dev Creates and stores a new Offer record.
+    * @param description A short offer description
+    * @param details A hash of the offer details document
+    */
   function createOffer(string description, bytes32 details) public {
     address owner = msg.sender;
 

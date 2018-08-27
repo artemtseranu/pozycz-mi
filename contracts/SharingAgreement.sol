@@ -35,6 +35,7 @@ contract SharingAgreement {
     createdAt = clock.getTime();
   }
 
+  /** @dev Confirms that borrowed item has been returned to the owner. */
   function confirmReturn() {
     require(!returnConfirmed, "Return has already been confirmed");
 

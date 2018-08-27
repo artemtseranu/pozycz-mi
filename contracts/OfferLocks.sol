@@ -15,6 +15,7 @@ contract OfferLocks {
     contractRegistry = ContractRegistry(contractRegistryAddress);
   }
 
+  /** @dev Locks an offer, preventing some of the actions on it, e.g. update. */
   function lockOffer(uint offerId) public {
     Offers offers = Offers(contractRegistry.getContractAddress("offers"));
 

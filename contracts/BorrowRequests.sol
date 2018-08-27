@@ -70,6 +70,9 @@ contract BorrowRequests {
     contractRegistry = ContractRegistry(contractRegistryAddress);
   }
 
+  /** @dev Marks the contract as 'stopped' which prevents some of the functions
+    * from beings executed.
+    */
   function stop() public requireOwner {
     stopped = true;
   }
@@ -78,6 +81,19 @@ contract BorrowRequests {
     stopped = false;
   }
 
+  /** @dev Creates and stores a new Request record.
+    * @param offerId ID of the offer being requested.
+    * @param guarantee Amount of ether (wei) the borrower agrees to provide as
+    * guarantee.
+    * @param payPerHour Amount of tokens per hour the borrower agrees to
+    * provide to the offer's owner as a reward for borrowing the item.
+    * @param minHours Together with payPerHour determines the minimum reward
+    * the offer's owner would be payed.
+    * @param maxHours Together with payPerHour determines the maximum reward
+    * the offer's owner would be payed and determines when the offer's owner
+    * can claim the reward and guarantee in the case when the item hasn't been
+    * returned.
+    */
   function create(
     uint offerId,
     uint guarantee,
@@ -125,6 +141,9 @@ contract BorrowRequests {
     });
   }
 
+  /** @dev Approves a specified 'request to borrow'.
+    * @param id ID of a 'request to borrow' to approve.
+    */
   function approve(uint id) public stopInEmergency {
     Offers offers = Offers(contractRegistry.getContractAddress("offers"));
     OfferLocks offerLocks = OfferLocks(contractRegistry.getContractAddress("offerLocks"));
@@ -158,6 +177,9 @@ contract BorrowRequests {
     });
   }
 
+  /** @dev Confirmes the borrower has received the requested item.
+    * @param offerId ID of the offer for which 'request to borrow' was made
+    */
   function confirmRequest(uint offerId) public payable stopInEmergency {
     Approval storage approval = approvals[offerId];
 
@@ -199,6 +221,10 @@ contract BorrowRequests {
     });
   }
 
+  /** @dev Unlocks the specified offer, and unsets mappings from offer ID to
+    * approval record and SharingAgreement address.
+    * @param offerId ID of the offer
+    */
   function releaseOffer(uint offerId) public {
     require(msg.sender == sharingContracts[offerId], "Sender must be offer's sharing agreement contract");
 
