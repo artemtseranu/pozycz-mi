@@ -21,7 +21,7 @@ contract OfferLocks {
 
   /** @dev Locks an offer, preventing some of the actions on it, e.g. creating
     * a borrow request for it.
-    * @param offerId
+    * @param offerId Offer ID.
     */
   function lockOffer(uint offerId) public {
     Offers offers = Offers(contractRegistry.getContractAddress("offers"));
@@ -42,7 +42,7 @@ contract OfferLocks {
   }
 
   /** @dev Unlocks an offer.
-    * @param offerId
+    * @param offerId Offer ID.
     */
   function unlockOffer(uint offerId) public {
     require(msg.sender == locks[offerId], "Sender must be lock's owner");
@@ -54,17 +54,17 @@ contract OfferLocks {
   }
 
   /** @dev Returns true if the specified offer is locked.
-    * @param offerId
-    * @returns boolean
+    * @param offerId Offer ID.
+    * @return boolean
     */
   function isOfferLocked(uint offerId) public view returns(bool) {
     return locks[offerId] > 0;
   }
 
   /** @dev Returns true if the specified offer is locked by a specified address.
-    * @param offerId
+    * @param offerId Offer ID.
     * @param lockOwner An address of the account to check
-    * @returns boolean
+    * @return boolean
     */
   function isOfferLockedBy(uint offerId, address lockOwner) public view returns(bool) {
     return locks[offerId] == lockOwner;
@@ -72,8 +72,8 @@ contract OfferLocks {
 
   /** @dev Returns a nonce of the specified offer. Nonce is incremented each
     * time an offer is unlocked.
-    * @param offerId
-    * @returns nonce
+    * @param offerId Offer ID.
+    * @return nonce
     */
   function getOfferNonce(uint offerId) public view returns(uint32) {
     return nonces[offerId];

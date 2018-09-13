@@ -98,7 +98,7 @@ contract Offers {
 
   /** Returns true if a specified offer is marked as deleted.
     * @param id Offer ID
-    * @returns boolean
+    * @return boolean
     */
   function isOfferDeleted(uint id) public view returns(bool) {
     return offers[id].isDeleted;
@@ -106,7 +106,7 @@ contract Offers {
 
   /** Returns an owner address of the specified offer.
     * @param id Offer ID
-    * @returns ownerAddress
+    * @return ownerAddress
     */
   function getOfferOwner(uint id) public view returns(address) {
     return offers[id].owner;

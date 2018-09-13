@@ -13,8 +13,8 @@ contract ContractRegistry {
   }
 
   /** @dev Sets the mapping from specified contract name to specified address.
-    * @param contractName
-    * @param contractAddress
+    * @param contractName Contract name.
+    * @param contractAddress Contract address.
     */
   function setContractAddress(string contractName, address contractAddress) public {
     require(owner == msg.sender, "Restricted to contract's owner");
@@ -23,8 +23,8 @@ contract ContractRegistry {
   }
 
   /** @dev Returns a registered address for the specified contract name.
-    * @param contractName
-    * @returns contractAddress
+    * @param contractName Contract name.
+    * @return contractAddress.
     */
   function getContractAddress(string contractName) public view returns(address) {
     return contractToAddress[keccak256(bytes(contractName))];

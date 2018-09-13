@@ -9,14 +9,14 @@ contract FakeClock {
   uint64 time;
 
   /** @dev Returns the current timestamp stored in the contract.
-    * @returns timestamp
+    * @return timestamp
     */
   function getTime() public view returns(uint64) {
     return time;
   }
 
   /** @dev Sets the current timestamp to the specified value.
-    * @param newTime
+    * @param newTime New time.
     */
   function setTime(uint64 newTime) public {
     time = newTime;

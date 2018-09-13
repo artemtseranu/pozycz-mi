@@ -231,7 +231,7 @@ contract BorrowRequests {
 
   /** @dev Unlocks the specified offer, and unsets mappings from offer ID to
     * approval record and SharingAgreement address.
-    * @param offerId
+    * @param offerId Offer ID
     */
   function releaseOffer(uint offerId) public {
     require(msg.sender == sharingContracts[offerId], "Sender must be offer's sharing agreement contract");
@@ -244,40 +244,40 @@ contract BorrowRequests {
   }
 
   /** @dev Returns an ID of approved request for the specified offer.
-    * @param offerId
-    * @returns requestId
+    * @param offerId Offer ID
+    * @return requestId
     */
   function getOfferApprovalRequestId(uint offerId) public view returns(uint) {
     return approvals[offerId].requestId;
   }
 
   /** @dev Returns the address of an owner (borrower) of a specified request.
-    * @param requestId
-    * @returns borrowerAddress
+    * @param requestId Request ID.
+    * @return borrowerAddress.
     */
   function getRequestBorrower(uint256 requestId) public view returns(address) {
     return requests[requestId].borrower;
   }
 
   /** @dev Returns minHours field of a specified request.
-    * @param requestId
-    * @returns minHours
+    * @param requestId Request ID.
+    * @return minHours
     */
   function getRequestMinHours(uint256 requestId) public view returns(uint16) {
     return requests[requestId].minHours;
   }
 
   /** @dev Returns maxHours field of a specified request.
-    * @param requestId
-    * @returns maxHours
+    * @param requestId Request ID.
+    * @return maxHours
     */
   function getRequestMaxHours(uint256 requestId) public view returns(uint16) {
     return requests[requestId].maxHours;
   }
 
   /** @dev Returns payPerHour field of a specified request.
-    * @param requestId
-    * @returns payPerHour
+    * @param requestId Request ID.
+    * @return payPerHour
     */
   function getRequestTokensPerHour(uint256 requestId) public view returns(uint256) {
     return requests[requestId].payPerHour;
