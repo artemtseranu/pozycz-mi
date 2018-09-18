@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push, goBack } from 'connected-react-router';
 
+import ReduxToastr from 'react-redux-toastr';
+
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -22,7 +24,7 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 
 import * as Paths from 'Constants/paths';
 
-const styles = (theme) => ({
+const styles = theme => ({
   menuButton: {
     marginLeft: -12,
     marginRight: 20,
@@ -145,6 +147,13 @@ class Layout extends React.Component {
 
     return (
       <React.Fragment>
+        <ReduxToastr
+          timeOut={4000}
+          newestOnTop={false}
+          preventDuplicates
+          position="top-center"
+          closeOnToastrClick
+        />
         <AppBar variant="sticky">
           <Toolbar>
             <IconButton

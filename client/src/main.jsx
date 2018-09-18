@@ -5,6 +5,9 @@ import { applyMiddleware, combineReducers, createStore } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import { createHashHistory } from 'history';
 import { ConnectedRouter, connectRouter, routerMiddleware } from 'connected-react-router';
+import { reducer as toastrReducer } from 'react-redux-toastr';
+
+import 'react-redux-toastr/lib/css/react-redux-toastr.min.css';
 
 import CssBaseline from '@material-ui/core/CssBaseline';
 
@@ -12,7 +15,11 @@ import * as reducers from './reducers';
 import rootSaga from './sagas/root';
 import Root from './components/Root';
 
-const reducer = combineReducers(reducers);
+const reducer = combineReducers({
+  toastr: toastrReducer,
+  ...reducers,
+});
+
 const sagaMiddleware = createSagaMiddleware();
 const history = createHashHistory();
 const middleware = applyMiddleware(routerMiddleware(history), sagaMiddleware);

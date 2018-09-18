@@ -3,6 +3,8 @@ import {
 } from 'redux-saga/effects';
 import TruffleContract from 'truffle-contract';
 
+import { toastr } from 'react-redux-toastr';
+
 import { getBlockNumber } from 'Lib/ethereum_utils';
 import { rootSelector } from 'Lib/reducer_utils';
 import { loadSingleOfferDetails } from 'Lib/saga_utils';
@@ -94,6 +96,8 @@ function* handleOfferCreatedEventReceived({ offerCreatedEvent, isOwned }) {
 }
 
 function* handleOfferDeletedEventReceived({ offerDeletedEvent }) {
+  toastr.success('Your offer has been successfully deleted.');
+
   yield put({ type: Events.OFFER_DELETED, offerDeletedEvent });
 }
 
